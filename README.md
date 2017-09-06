@@ -12,6 +12,12 @@ Eg:
 2. customized chips component with abitlity 
   * to display tooltips
   * to add chips on tab click
+  
+You can directly use ultimate-primeNg in your angular projects without performing `buil` operation
+
+** just add this (https://github.com/sourabh8003/ultimate-primeNg-compiled) link in your `package.json` file
+
+example: `primeng": "https://github.com/sourabh8003/ultimate-primeNg-compiled.git"` 
 
 See Origin Version [PrimeNG homepage](http://www.primefaces.org/primeng) for live showcase and documentation.
 
