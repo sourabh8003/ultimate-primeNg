@@ -2,6 +2,7 @@ import {NgModule,Component,ElementRef,Input,Output,EventEmitter,AfterContentInit
 import {CommonModule} from '@angular/common';
 import {SharedModule,PrimeTemplate} from '../common/shared';
 import {InputTextModule} from '../inputtext/inputtext';
+import {TooltipModule} from '../tooltip/tooltip';
 import {DomHandler} from '../dom/domhandler';
 import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
 
@@ -23,7 +24,8 @@ export const CHIPS_VALUE_ACCESSOR: any = {
                 </li>
                 <li class="ui-chips-input-token">
                     <input #inputtext type="text" [attr.id]="inputId" [attr.placeholder]="placeholder" [attr.tabindex]="tabindex" (keydown)="onKeydown($event,inputtext)" 
-                        (focus)="onFocus()" (blur)="onBlur()" [disabled]="maxedOut||disabled" [disabled]="disabled" [ngStyle]="inputStyle" [class]="inputStyleClass">
+                        (focus)="onFocus()" (blur)="onBlur()" [disabled]="maxedOut||disabled" [disabled]="disabled" [ngStyle]="inputStyle" [class]="inputStyleClass"
+                           [pTooltip]="toolTipMessage" [tooltipPosition]="toolTipPosition" [tooltipEvent]="toolTipEvent" [positionStyle]="positionStyles" [tooltipDisabled]="toolTipDisabled" [tooltipStyleClass]="toolTipStyleClasses" [escape]="toolTipEscape">
                 </li>
             </ul>
         </div>
@@ -32,68 +34,84 @@ export const CHIPS_VALUE_ACCESSOR: any = {
 })
 export class Chips implements AfterContentInit,ControlValueAccessor {
 
+    @Input() toolTipMessage: string;
+
+    @Input() toolTipPosition: string;
+
+    @Input() toolTipEvent: string;
+
+    @Input() positionStyles: string;
+
+    @Input() toolTipDisabled: boolean;
+
+    @Input() toolTipAppendTo: string;
+
+    @Input() toolTipStyleClasses: string;
+
+    @Input() toolTipEscape: boolean;
+
     @Input() style: any;
 
     @Input() styleClass: string;
-    
+
     @Input() disabled: boolean;
 
     @Output() onAdd: EventEmitter<any> = new EventEmitter();
-    
+
     @Output() onRemove: EventEmitter<any> = new EventEmitter();
-    
+
     @Input() field: string;
-    
+
     @Input() placeholder: string;
-    
+
     @Input() max: number;
 
     @Input() tabindex: number;
 
     @Input() inputId: string;
-    
+
     @Input() allowDuplicate: boolean = true;
-    
+
     @Input() inputStyle: any;
-    
+
     @Input() inputStyleClass: any;
-    
+
     @Input() addOnTab: boolean;
-    
+
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
-    
+
     public itemTemplate: TemplateRef<any>;
-        
+
     value: any;
-    
+
     onModelChange: Function = () => {};
-    
+
     onModelTouched: Function = () => {};
-        
+
     valueChanged: boolean;
-    
+
     focus: boolean;
-            
+
     constructor(public el: ElementRef, public domHandler: DomHandler) {}
-    
+
     ngAfterContentInit() {
         this.templates.forEach((item) => {
             switch(item.getType()) {
                 case 'item':
                     this.itemTemplate = item.template;
                 break;
-                
+
                 default:
                     this.itemTemplate = item.template;
                 break;
             }
         });
     }
-    
+
     writeValue(value: any) : void {
         this.value = value;
     }
-    
+
     registerOnChange(fn: Function): void {
         this.onModelChange = fn;
     }
@@ -101,11 +119,11 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
     registerOnTouched(fn: Function): void {
         this.onModelTouched = fn;
     }
-    
+
     setDisabledState(val: boolean): void {
         this.disabled = val;
     }
-    
+
     resolveFieldData(data: any, field: string): any {
         if(data && field) {
             if(field.indexOf('.') == -1) {
@@ -124,21 +142,21 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
             return null;
         }
     }
-    
+
     onFocus() {
         this.focus = true;
     }
-    
+
     onBlur() {
         this.focus = false;
         this.onModelTouched();
     }
-    
+
     removeItem(event: Event, index: number): void {
         if(this.disabled) {
             return;
         }
-        
+
         let removedItem = this.value[index];
         this.value = this.value.filter((val, i) => i!=index);
         this.onModelChange(this.value);
@@ -147,7 +165,7 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
             value: removedItem
         });
     }
-    
+
     addItem(event: Event, item: string): void {
         this.value = this.value||[];
         if(item && item.trim().length && (!this.max||this.max > item.length)) {
@@ -159,9 +177,9 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
                     value: item
                 });
             }
-        }     
+        }
     }
-    
+
     onKeydown(event: KeyboardEvent, inputEL: HTMLInputElement): void {
         switch(event.which) {
             //backspace
@@ -176,24 +194,23 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
                     });
                 }
             break;
-            
+
             //enter
             case 13:
                 this.addItem(event, inputEL.value);
                 inputEL.value = '';
-                
+
                 event.preventDefault();
             break;
-            
+
             case 9:
                 if(this.addOnTab && inputEL.value !== '') {
                     this.addItem(event, inputEL.value);
                     inputEL.value = '';
 
-                    event.preventDefault();
                 }
             break;
-            
+
             default:
                 if(this.max && this.value && this.max === this.value.length) {
                     event.preventDefault();
@@ -201,14 +218,14 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
             break;
         }
     }
-    
+
     get maxedOut(): boolean {
         return this.max && this.value && this.max === this.value.length;
     }
 }
 
 @NgModule({
-    imports: [CommonModule,InputTextModule,SharedModule],
+    imports: [CommonModule,InputTextModule,SharedModule,TooltipModule],
     exports: [Chips,InputTextModule,SharedModule],
     declarations: [Chips]
 })
