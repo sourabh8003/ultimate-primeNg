@@ -116,7 +116,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
     @Output() onFocus: EventEmitter<any> = new EventEmitter();
 
     @Output() onBlur: EventEmitter<any> = new EventEmitter();
-
+  
     @Output() onDropdownClick: EventEmitter<any> = new EventEmitter();
 
 	  @Output() onClear: EventEmitter<any> = new EventEmitter();
@@ -316,7 +316,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
 
         if(value.length === 0) {
            this.hide();
-		   this.onClear.emit(event);
+          this.onClear.emit(event);
         }
 
         if(value.length >= this.minLength) {
@@ -373,7 +373,6 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
         }
 
         this.onSelect.emit(option);
-
         this.focusInput();
     }
 
@@ -488,14 +487,14 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
             // customized
             else if (event.which === 13) {
               if (event.target.value.trim().length) {
-                this.selectItem(event.target.value);
+                this.selectItem({'name': event.target.value, code: event.target.value});
                 event.preventDefault();
               } else {
                 event.target.value = '';
               }
             } else if (event.which === 9) {
               if (event.target.value.trim().length) {
-                this.selectItem(event.target.value);
+                this.selectItem({'name': event.target.value, code: event.target.value});
               } else {
                 event.target.value = '';
               }
@@ -641,7 +640,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
 
 @NgModule({
     imports: [CommonModule,InputTextModule,ButtonModule,SharedModule,TooltipModule],
-    exports: [AutoComplete,SharedModule],
+    exports: [AutoComplete,InputTextModule,SharedModule],
     declarations: [AutoComplete]
 })
 export class AutoCompleteModule { }
