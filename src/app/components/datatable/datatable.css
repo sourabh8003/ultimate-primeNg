@@ -283,7 +283,7 @@
 }
 
 .ui-datatable-scrollable-view {
-    
+
 }
 
 .ui-datatable-frozen-view .ui-datatable-scrollable-body {
@@ -358,8 +358,16 @@
         margin: -.4em 1em -.4em -.4em;
         font-weight: bold;
     }
-    
+
     .ui-datatable-reflow.ui-datatable-scrollable .ui-datatable-scrollable-body colgroup {
         display: block;
     }
+}
+.editable-cell-icon {
+  float: right;
+  display: none;
+}
+.ui-editable-column:hover > .ui-cell-data > .editable-cell-icon {
+  display: block;
+  opacity: 0.6;
 }

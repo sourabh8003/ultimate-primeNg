@@ -116,7 +116,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
     @Output() onFocus: EventEmitter<any> = new EventEmitter();
 
     @Output() onBlur: EventEmitter<any> = new EventEmitter();
-  
+
     @Output() onDropdownClick: EventEmitter<any> = new EventEmitter();
 
 	  @Output() onClear: EventEmitter<any> = new EventEmitter();
