@@ -183,10 +183,9 @@ export class ColumnFooters {
                         (dt.rowGroupMode=='rowspan' && ((dt.sortField==col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) || (dt.sortField!=col.field)))"
                         [ngStyle]="col.style" [class]="col.styleClass" (click)="dt.switchCellToEditMode(cell,col,rowData)"
                         [ngClass]="{'ui-editable-column':col.editable,'ui-selection-column':col.selectionMode, 'ui-helper-hidden': col.hidden}"
-                        [attr.rowspan]="(dt.rowGroupMode=='rowspan' && dt.sortField == col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) ? dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].size : null"
-                        [pTooltip]="toolTipMsg" [tooltipPosition]="toolTipPos" [tooltipEvent]="toolTipEve" [positionStyle]="toolTipPosStyle" [tooltipDisabled]="toolTipDis" [tooltipStyleClass]="toolTipStyleClasses" [escape]="toolTipEscape">
+                        [attr.rowspan]="(dt.rowGroupMode=='rowspan' && dt.sortField == col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) ? dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].size : null" [pTooltip]="col.editable ? toolTipMsg : null" [tooltipPosition]="toolTipPos">
                         <span class="ui-column-title" *ngIf="dt.responsive">{{col.header}}</span>
-                        <span class="ui-cell-data" *ngIf="!col.bodyTemplate && !col.expander && !col.selectionMode">{{dt.resolveFieldData(rowData,col.field)}}<i class="fa fa-pencil-square-o editable-cell-icon" aria-hidden="true"></i></span>
+                        <span class="ui-cell-data" *ngIf="!col.bodyTemplate && !col.expander && !col.selectionMode">{{dt.resolveFieldData(rowData,col.field)}}<i class="fa fa-pencil-square-o editable-cell-icon" aria-hidden="true" *ngIf="col.editable"></i></span>
                         <span class="ui-cell-data" *ngIf="col.bodyTemplate">
                             <p-columnBodyTemplateLoader [column]="col" [rowData]="rowData" [rowIndex]="rowIndex + dt.first"></p-columnBodyTemplateLoader>
                         </span>
@@ -232,20 +231,20 @@ export class TableBody {
 
     @Input("pToolTipPosStyle") toolTipPosStyle: string;
 
-    @Input("pTooltipDis") toolTipDis: string;
+    @Input("pTooltipDis") toolTipDis: boolean;
 
     @Input("pTooltipAppendTo") toolTipAppendTo: string;
 
     @Input("pTooltipStyleClasess") toolTipStyleClasess: string;
 
-    @Input("pTooltipEscape") toolTipEsc: string;
+    @Input("pTooltipEscape") toolTipEsc: boolean;
 
     @Input("pTableBody") columns: Column[];
 
     @Input() data: any[];
 
     visibleColumns() {
-        return this.columns ? this.columns.filter(c => !c.hidden): [];
+      return this.columns ? this.columns.filter(c => !c.hidden): [];
     }
 }
 
@@ -468,8 +467,7 @@ export class ScrollableView implements AfterViewInit,AfterViewChecked,OnDestroy 
                             <tr *ngFor="let footerRow of footerColumnGroup.rows" class="ui-state-default" [pColumnFooters]="footerRow.columns"></tr>
                         </ng-template>
                     </tfoot>
-                    <tbody [ngClass]="{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (rowHover||selectionMode)}" [pTableBody]="columns" [data]="dataToRender" 
-                           [pTooltipMsg]="toolTipMessage" [pTooltipPos]="toolTipPosition" [pTooltipEve]="toolTipEvent" [pToolTipPosStyle]="positionStyles" [pTooltipDis]="toolTipDisabled" [pTooltipAppendTo]="toolTipAppendTo" [pTooltipStyleClasess]="toolTipStyleClasses" [pTooltipEscape]="toolTipEscape"></tbody>
+                    <tbody [ngClass]="{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (rowHover||selectionMode)}" [pTableBody]="columns" [data]="dataToRender" [pTooltipMsg]="toolTipMessage" [pTooltipPos]="toolTipPosition" [pTooltipEve]="toolTipEvent" [pToolTipPosStyle]="positionStyles" [pTooltipDis]="toolTipDisabled" [pTooltipAppendTo]="toolTipAppendTo" [pTooltipStyleClasess]="toolTipStyleClasses" [pTooltipEscape]="toolTipEscape"></tbody>
                 </table>
             </div>
             
