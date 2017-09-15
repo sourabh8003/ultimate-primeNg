@@ -116,6 +116,7 @@ export class RowExpansionLoader implements OnInit, OnDestroy {
                 [attr.tabindex]="col.sortable ? tabindex : null" (keydown)="dt.onHeaderKeydown($event,col)">
                 <span class="ui-column-resizer ui-clickable" *ngIf="dt.resizableColumns && ((dt.columnResizeMode == 'fit' && !lastCol) || dt.columnResizeMode == 'expand')" (mousedown)="dt.initColumnResize($event)"></span>
                 <span class="ui-column-title" *ngIf="!col.selectionMode&&!col.headerTemplate">{{col.header}}</span>
+                <i class="fa fa-info-circle editable-column-icon" aria-hidden="true" *ngIf="col.editable" [pTooltip]="col.editable ? toolTipMsg : null" [tooltipPosition]="toolTipPos"  [positionStyle]="toolTipPosStyle"  [tooltipStyleClass]="toolTipStyleClasses" [escape]="toolTipEscape"></i>
                 <span class="ui-column-title" *ngIf="col.headerTemplate">
                     <p-columnHeaderTemplateLoader [column]="col"></p-columnHeaderTemplateLoader>
                 </span>
@@ -134,6 +135,22 @@ export class ColumnHeaders {
     constructor(@Inject(forwardRef(() => DataTable)) public dt:DataTable) {}
 
     @Input("pColumnHeaders") columns: Column[];
+
+    @Input("pTooltipMsg") toolTipMsg: string;
+
+    @Input("pTooltipPos") toolTipPos: string;
+
+    @Input("pTooltipEve") toolTipEve: string;
+
+    @Input("pToolTipPosStyle") toolTipPosStyle: string;
+
+    @Input("pTooltipDis") toolTipDis: boolean;
+
+    @Input("pTooltipAppendTo") toolTipAppendTo: string;
+
+    @Input("pTooltipStyleClasess") toolTipStyleClasess: string;
+
+    @Input("pTooltipEscape") toolTipEsc: boolean;
 }
 
 @Component({
@@ -183,9 +200,9 @@ export class ColumnFooters {
                         (dt.rowGroupMode=='rowspan' && ((dt.sortField==col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) || (dt.sortField!=col.field)))"
                         [ngStyle]="col.style" [class]="col.styleClass" (click)="dt.switchCellToEditMode(cell,col,rowData)"
                         [ngClass]="{'ui-editable-column':col.editable,'ui-selection-column':col.selectionMode, 'ui-helper-hidden': col.hidden}"
-                        [attr.rowspan]="(dt.rowGroupMode=='rowspan' && dt.sortField == col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) ? dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].size : null" [pTooltip]="col.editable ? toolTipMsg : null" [tooltipPosition]="toolTipPos">
+                        [attr.rowspan]="(dt.rowGroupMode=='rowspan' && dt.sortField == col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) ? dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].size : null">
                         <span class="ui-column-title" *ngIf="dt.responsive">{{col.header}}</span>
-                        <span class="ui-cell-data" *ngIf="!col.bodyTemplate && !col.expander && !col.selectionMode">{{dt.resolveFieldData(rowData,col.field)}}<i class="fa fa-pencil-square-o editable-cell-icon" aria-hidden="true" *ngIf="col.editable"></i></span>
+                        <span class="ui-cell-data" *ngIf="!col.bodyTemplate && !col.expander && !col.selectionMode">{{dt.resolveFieldData(rowData,col.field)}}</span>
                         <span class="ui-cell-data" *ngIf="col.bodyTemplate">
                             <p-columnBodyTemplateLoader [column]="col" [rowData]="rowData" [rowIndex]="rowIndex + dt.first"></p-columnBodyTemplateLoader>
                         </span>
@@ -222,22 +239,6 @@ export class ColumnFooters {
 export class TableBody {
 
     constructor(@Inject(forwardRef(() => DataTable)) public dt:DataTable) {}
-
-    @Input("pTooltipMsg") toolTipMsg: string;
-
-    @Input("pTooltipPos") toolTipPos: string;
-
-    @Input("pTooltipEve") toolTipEve: string;
-
-    @Input("pToolTipPosStyle") toolTipPosStyle: string;
-
-    @Input("pTooltipDis") toolTipDis: boolean;
-
-    @Input("pTooltipAppendTo") toolTipAppendTo: string;
-
-    @Input("pTooltipStyleClasess") toolTipStyleClasess: string;
-
-    @Input("pTooltipEscape") toolTipEsc: boolean;
 
     @Input("pTableBody") columns: Column[];
 
@@ -456,7 +457,7 @@ export class ScrollableView implements AfterViewInit,AfterViewChecked,OnDestroy 
             <div class="ui-datatable-tablewrapper" *ngIf="!scrollable">
                 <table [ngClass]="tableStyleClass" [ngStyle]="tableStyle">
                     <thead class="ui-datatable-thead">
-                        <tr *ngIf="!headerColumnGroup" class="ui-state-default" [pColumnHeaders]="columns"></tr>
+                        <tr *ngIf="!headerColumnGroup" class="ui-state-default hell" [pColumnHeaders]="columns" [pTooltipMsg]="toolTipMessage" [pTooltipPos]="toolTipPosition" [pTooltipEve]="toolTipEvent" [pToolTipPosStyle]="positionStyles" [pTooltipDis]="toolTipDisabled" [pTooltipAppendTo]="toolTipAppendTo" [pTooltipStyleClasess]="toolTipStyleClasses" [pTooltipEscape]="toolTipEscape"></tr>
                         <ng-template [ngIf]="headerColumnGroup">
                             <tr *ngFor="let headerRow of headerColumnGroup.rows" class="ui-state-default" [pColumnHeaders]="headerRow.columns"></tr>
                         </ng-template>
@@ -467,7 +468,7 @@ export class ScrollableView implements AfterViewInit,AfterViewChecked,OnDestroy 
                             <tr *ngFor="let footerRow of footerColumnGroup.rows" class="ui-state-default" [pColumnFooters]="footerRow.columns"></tr>
                         </ng-template>
                     </tfoot>
-                    <tbody [ngClass]="{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (rowHover||selectionMode)}" [pTableBody]="columns" [data]="dataToRender" [pTooltipMsg]="toolTipMessage" [pTooltipPos]="toolTipPosition" [pTooltipEve]="toolTipEvent" [pToolTipPosStyle]="positionStyles" [pTooltipDis]="toolTipDisabled" [pTooltipAppendTo]="toolTipAppendTo" [pTooltipStyleClasess]="toolTipStyleClasses" [pTooltipEscape]="toolTipEscape"></tbody>
+                    <tbody [ngClass]="{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (rowHover||selectionMode)}" [pTableBody]="columns" [data]="dataToRender"></tbody>
                 </table>
             </div>
             

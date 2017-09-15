@@ -363,11 +363,6 @@
         display: block;
     }
 }
-.ui-editable-column .ui-cell-data .editable-cell-icon {
-  float: right;
-  display: none;
-}
-.ui-editable-column:hover > .ui-cell-data > .editable-cell-icon {
-  display: inline-block;
-  opacity: 0.6;
+.fa-info-circle.editable-column-icon {
+  margin-left: 0.5rem;
 }

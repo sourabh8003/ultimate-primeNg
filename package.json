@@ -9,7 +9,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build-components": "ngc -p tsconfig-release.json",
+    "build-components": "tsc -p tsconfig-release.json",
     "build-assets": "gulp build-assets",
     "build-styles": "node-sass src/assets/components -o src/assets/components",
     "build-redistribute": "npm run build-components && npm run build-assets && npm run build-styles"
