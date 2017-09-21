@@ -190,7 +190,7 @@ export class ColumnFooters {
                 </td>
             </tr>
             <tr #rowElement *ngIf="!dt.expandableRowGroups||dt.isRowGroupExpanded(rowData)"
-                    (click)="dt.handleRowClick($event, rowData, rowIndex)" (dblclick)="dt.rowDblclick($event,rowData)" (contextmenu)="dt.onRowRightClick($event,rowData)" (touchend)="dt.handleRowTouchEnd($event)"
+                     (dblclick)="dt.rowDblclick($event,rowData)" (contextmenu)="dt.onRowRightClick($event,rowData)" (touchend)="dt.handleRowTouchEnd($event)"
                     [ngClass]="[even&&dt.rowGroupMode!='rowspan'? 'ui-datatable-even':'',
                                 odd&&dt.rowGroupMode!='rowspan'?'ui-datatable-odd':'',
                                 dt.isSelected(rowData)? 'ui-state-highlight': '', 
@@ -198,7 +198,7 @@ export class ColumnFooters {
                 <ng-template ngFor let-col [ngForOf]="columns" let-colIndex="index">
                     <td #cell *ngIf="!dt.rowGroupMode || (dt.rowGroupMode == 'subheader') ||
                         (dt.rowGroupMode=='rowspan' && ((dt.sortField==col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) || (dt.sortField!=col.field)))"
-                        [ngStyle]="col.style" [class]="col.styleClass" (click)="dt.switchCellToEditMode(cell,col,rowData)"
+                        [ngStyle]="col.style" [class]="col.styleClass" (click)="col.editable ? dt.switchCellToEditMode(cell,col,rowData) : dt.handleRowClick($event, rowData, rowIndex)"
                         [ngClass]="{'ui-editable-column':col.editable,'ui-selection-column':col.selectionMode, 'ui-helper-hidden': col.hidden}"
                         [attr.rowspan]="(dt.rowGroupMode=='rowspan' && dt.sortField == col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) ? dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].size : null">
                         <span class="ui-column-title" *ngIf="dt.responsive">{{col.header}}</span>
@@ -1831,7 +1831,8 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
     }
 
     switchCellToEditMode(cell: any, column: Column, rowData: any) {
-        if(!this.selectionMode && this.editable && column.editable) {
+        // customized
+        if(this.selectionMode && this.editable && column.editable) {
             this.editorClick = true;
             this.bindDocumentEditListener();
 
