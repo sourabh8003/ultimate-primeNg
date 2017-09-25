@@ -1831,8 +1831,8 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
     }
 
     switchCellToEditMode(cell: any, column: Column, rowData: any) {
-        // customized
-        if(this.selectionMode && this.editable && column.editable) {
+        // customized (this.selectionMode: rem `!` repl `&&` with `||`)
+        if(this.selectionMode || this.editable && column.editable) {
             this.editorClick = true;
             this.bindDocumentEditListener();
 
