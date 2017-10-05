@@ -7,6 +7,7 @@ import {SharedModule,PrimeTemplate} from '../common/shared';
 import {DomHandler} from '../dom/domhandler';
 import {ObjectUtils} from '../utils/objectutils';
 import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
+import { isNullOrUndefined } from "util";
 
 export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
@@ -313,6 +314,10 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
             return;
         }
 
+        if(this.timeout) {
+          clearTimeout(this.timeout);
+        }
+
         let value = (<HTMLInputElement> event.target).value;
         if(!this.multiple) {
             this.onModelChange(value);
@@ -323,22 +328,17 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
           this.onClear.emit(event);
         }
 
-        if(value.length >= this.minLength) {
-            //Cancel the search request if user types within the timeout
-            if(this.timeout) {
-                clearTimeout(this.timeout);
-            }
-
-            this.timeout = setTimeout(() => {
-                this.search(event, value);
-            }, this.delay);
-        }
-        else {
-            this.suggestions = null;
-            this.hide();
-        }
-        this.updateFilledState();
-        this.inputKeyDown = false;
+      if(value.length >= this.minLength) {
+        this.timeout = setTimeout(() => {
+        this.search(event, value);
+        }, this.delay);
+      }
+      else {
+        this.suggestions = null;
+        this.hide();
+      }
+      this.updateFilledState();
+      this.inputKeyDown = false;
     }
 
     onInputClick(event: MouseEvent) {
@@ -496,14 +496,14 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
                 this.search(event,event.target.value);
             }
             // customized
-            else if (event.which === 13) {
+            else if (event.which === 13 && this.forceSelection === undefined) {
               if (event.target.value.trim().length) {
                 this.selectItem({'name': event.target.value, code: event.target.value});
                 event.preventDefault();
               } else {
                 event.target.value = '';
               }
-            } else if (event.which === 9) {
+            } else if (event.which === 9 && this.forceSelection === undefined) {
               if (event.target.value.trim().length) {
                 this.selectItem({'name': event.target.value, code: event.target.value});
               } else {
