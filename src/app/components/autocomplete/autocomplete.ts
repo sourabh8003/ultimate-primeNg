@@ -498,14 +498,16 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
             // customized
             else if (event.which === 13 && this.forceSelection === undefined) {
               if (event.target.value.trim().length) {
-                this.selectItem({'name': event.target.value, code: event.target.value});
+                // this.selectItem({'name': event.target.value, code: event.target.value});
+                this.selectItem(event.target.value);
                 event.preventDefault();
               } else {
                 event.target.value = '';
               }
             } else if (event.which === 9 && this.forceSelection === undefined) {
               if (event.target.value.trim().length) {
-                this.selectItem({'name': event.target.value, code: event.target.value});
+                // this.selectItem({'name': event.target.value, code: event.target.value});
+                this.selectItem(event.target.value);
               } else {
                 event.target.value = '';
               }
