@@ -293,7 +293,7 @@ export class ScrollableView implements AfterViewInit,AfterViewChecked,OnDestroy 
 
     constructor(@Inject(forwardRef(() => DataTable)) public dt:DataTable, public domHandler: DomHandler, public el: ElementRef, public renderer: Renderer2, public zone: NgZone) {}
 
-    @Input("pScrollableView") columns: Column[];
+    @Input('pScrollableView') columns: Column[];
 
     @ViewChild('scrollHeader') scrollHeaderViewChild: ElementRef;
 
@@ -531,6 +531,8 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
 
     @Input() editable: boolean;
 
+    @Input() isEditableAlways: boolean;
+
     @Output() onRowClick: EventEmitter<any> = new EventEmitter();
 
     @Output() onRowSelect: EventEmitter<any> = new EventEmitter();
@@ -690,6 +692,8 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
     @ContentChild(HeaderColumnGroup) headerColumnGroup: HeaderColumnGroup;
 
     @ContentChild(FooterColumnGroup) footerColumnGroup: FooterColumnGroup;
+
+    public isEditableSet: boolean;
 
     public _value: any[];
 
@@ -1834,9 +1838,9 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
         // customized (this.selectionMode: rem `!` repl `&&` with `||`)
         if(this.selectionMode || this.editable && column.editable) {
             this.editorClick = true;
-            this.bindDocumentEditListener();
+            this.bindDocumentEditListener(column.isEditableAlways);
 
-            if(cell != this.editingCell) {
+            if(cell != this.editingCell && column.isEditableAlways === undefined) {
                 if(this.editingCell && this.domHandler.find(this.editingCell, '.ng-invalid.ng-dirty').length == 0) {
                     this.domHandler.removeClass(this.editingCell, 'ui-cell-editing');
                 }
@@ -1852,26 +1856,28 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
         }
     }
 
-    switchCellToViewMode(element: any) {
-        this.editingCell = null;
-        let cell = this.findCell(element);
-        this.domHandler.removeClass(cell, 'ui-cell-editing');
-        this.unbindDocumentEditListener();
-    }
-
-    closeCell() {
-        if(this.editingCell) {
-            this.domHandler.removeClass(this.editingCell, 'ui-cell-editing');
-            this.editingCell = null;
-            this.unbindDocumentEditListener();
+    switchCellToViewMode(element: any, column: Column) {
+        if (column.isEditableAlways === undefined) {
+          this.editingCell = null;
+          let cell = this.findCell(element);
+          this.domHandler.removeClass(cell, 'ui-cell-editing');
+          this.unbindDocumentEditListener();
         }
     }
 
-    bindDocumentEditListener() {
+    closeCell(isAlwaysEditable: boolean) {
+        if(this.editingCell && isAlwaysEditable === undefined) {
+          this.domHandler.removeClass(this.editingCell, 'ui-cell-editing');
+          this.editingCell = null;
+          this.unbindDocumentEditListener();
+        }
+    }
+
+    bindDocumentEditListener(isAlwaysEditable: boolean) {
         if(!this.documentEditListener) {
             this.documentEditListener = this.renderer.listen('document', 'click', (event) => {
                 if(!this.editorClick) {
-                    this.closeCell();
+                    this.closeCell(isAlwaysEditable);
                 }
                 this.editorClick = false;
             });
@@ -1891,22 +1897,25 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
 
             //enter
             if(event.keyCode == 13) {
+                this.isEditableSet = true;
                 this.onEditComplete.emit({column: column, data: rowData, index: rowIndex});
                 this.domHandler.invokeElementMethod(event.target, 'blur');
-                this.switchCellToViewMode(event.target);
+                this.switchCellToViewMode(event.target, column);
                 event.preventDefault();
             }
 
             //escape
             else if(event.keyCode == 27) {
+                this.isEditableSet = true;
                 this.onEditCancel.emit({column: column, data: rowData, index: rowIndex});
                 this.domHandler.invokeElementMethod(event.target, 'blur');
-                this.switchCellToViewMode(event.target);
+                this.switchCellToViewMode(event.target, column);
                 event.preventDefault();
             }
 
             //tab
             else if(event.keyCode == 9) {
+                this.isEditableSet = true;
                 this.onEditComplete.emit({column: column, data: rowData, index: rowIndex});
 
                 if(event.shiftKey)

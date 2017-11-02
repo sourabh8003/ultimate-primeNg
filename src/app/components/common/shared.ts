@@ -72,6 +72,7 @@ export class Column implements AfterContentInit{
     @Input() footer: string;
     @Input() sortable: any;
     @Input() editable: boolean;
+    @Input() isEditableAlways: boolean;
     @Input() filter: boolean;
     @Input() filterMatchMode: string;
     @Input() filterType: string = 'text';
