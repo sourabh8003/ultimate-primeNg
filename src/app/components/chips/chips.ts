@@ -23,7 +23,7 @@ export const CHIPS_VALUE_ACCESSOR: any = {
                     <ng-template *ngIf="itemTemplate" [pTemplateWrapper]="itemTemplate" [item]="item"></ng-template>
                 </li>
                 <li class="ui-chips-input-token">
-                    <input #inputtext type="text" [attr.id]="inputId" [attr.placeholder]="placeholder" [attr.tabindex]="tabindex" (keydown)="onKeydown($event,inputtext)" 
+                    <input #inputtext type="text" [attr.id]="inputId" [attr.placeholder]="(value && value.length ? null : placeholder)" [attr.tabindex]="tabindex" (keydown)="onKeydown($event,inputtext)" 
                         (focus)="onInputFocus()" (blur)="onInputBlur($event,inputtext)" [disabled]="maxedOut||disabled" [disabled]="disabled" [ngStyle]="inputStyle" [class]="inputStyleClass"
                            [pTooltip]="toolTipMessage" [tooltipPosition]="toolTipPosition" [tooltipEvent]="toolTipEvent" [positionStyle]="positionStyles" [tooltipDisabled]="toolTipDisabled" [tooltipStyleClass]="toolTipStyleClasses" [escape]="toolTipEscape">
                 </li>
@@ -149,9 +149,9 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
         }
     }
 
-    onInputFocus() {
+    onInputFocus(event: FocusEvent) {
         this.focus = true;
-        this.onFocus.emit();
+        this.onFocus.emit(event);
     }
 
     onInputBlur(event: FocusEvent, inputEL: HTMLInputElement) {
@@ -161,7 +161,7 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
             inputEL.value = '';
         }
         this.onModelTouched();
-        this.onBlur.emit();
+        this.onBlur.emit(event);
     }
 
     removeItem(event: Event, index: number): void {

@@ -3,6 +3,7 @@
 /tmp
 /out-tsc
 /aot
+/src/app/components/**/*.ngfactory.ts
 
 # source
 src

@@ -114,7 +114,7 @@ export class RowExpansionLoader implements OnInit, OnDestroy {
                 (dragstart)="dt.onColumnDragStart($event)" (dragleave)="dt.onColumnDragleave($event)" (drop)="dt.onColumnDrop($event)" (mousedown)="dt.onHeaderMousedown($event,headerCell)"
                 [attr.tabindex]="col.sortable ? tabindex : null" (keydown)="dt.onHeaderKeydown($event,col)"
                 [attr.scope]="col.scope||(col.colspan ? 'colgroup' : 'col')">
-                <span class="ui-column-resizer ui-clickable" *ngIf="dt.resizableColumns && ((dt.columnResizeMode == 'fit' && !lastCol) || dt.columnResizeMode == 'expand')" (mousedown)="dt.initColumnResize($event)"></span>
+                <span class="ui-column-resizer ui-clickable" *ngIf="dt.resizableColumns && col.resizable && ((dt.columnResizeMode == 'fit' && !lastCol) || dt.columnResizeMode == 'expand')" (mousedown)="dt.initColumnResize($event)"></span>
                 <span class="ui-column-title" *ngIf="!col.selectionMode&&!col.headerTemplate">{{col.header}}</span>
                 <span class="ui-column-title" *ngIf="col.headerTemplate">
                     <p-columnHeaderTemplateLoader [column]="col"></p-columnHeaderTemplateLoader>
@@ -472,7 +472,8 @@ export class ScrollableView implements AfterViewInit,AfterViewChecked,OnDestroy 
                 <ng-content select="p-header"></ng-content>
             </div>
             <p-paginator [rows]="rows" [first]="first" [totalRecords]="totalRecords" [pageLinkSize]="pageLinks" styleClass="ui-paginator-top" [alwaysShow]="alwaysShowPaginator"
-                (onPageChange)="onPageChange($event)" [rowsPerPageOptions]="rowsPerPageOptions" *ngIf="paginator && (paginatorPosition === 'top' || paginatorPosition =='both')"></p-paginator>
+                (onPageChange)="onPageChange($event)" [rowsPerPageOptions]="rowsPerPageOptions" *ngIf="paginator && (paginatorPosition === 'top' || paginatorPosition =='both')"
+                [templateLeft]="paginatorLeftTemplate" [templateRight]="paginatorRightTemplate"></p-paginator>
             <div class="ui-datatable-tablewrapper" *ngIf="!scrollable">
                 <table [ngClass]="tableStyleClass" [ngStyle]="tableStyle">
                     <thead class="ui-datatable-thead">
@@ -504,7 +505,8 @@ export class ScrollableView implements AfterViewInit,AfterViewChecked,OnDestroy 
             </ng-template>
             
             <p-paginator [rows]="rows" [first]="first" [totalRecords]="totalRecords" [pageLinkSize]="pageLinks" styleClass="ui-paginator-bottom" [alwaysShow]="alwaysShowPaginator"
-                (onPageChange)="onPageChange($event)" [rowsPerPageOptions]="rowsPerPageOptions" *ngIf="paginator && (paginatorPosition === 'bottom' || paginatorPosition =='both')"></p-paginator>
+                (onPageChange)="onPageChange($event)" [rowsPerPageOptions]="rowsPerPageOptions" *ngIf="paginator && (paginatorPosition === 'bottom' || paginatorPosition =='both')"
+                [templateLeft]="paginatorLeftTemplate" [templateRight]="paginatorRightTemplate"></p-paginator>
             <div class="ui-datatable-footer ui-widget-header" *ngIf="footer">
                 <ng-content select="p-footer"></ng-content>
             </div>
@@ -537,8 +539,6 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
     @Input() editable: boolean;
 
     @Input() showHeaderCheckbox: boolean = true;
-
-    @Input() isEditableAlways: boolean;
 
     @Output() onRowClick: EventEmitter<any> = new EventEmitter();
 
@@ -698,8 +698,6 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
 
     @ContentChildren(FooterColumnGroup) footerColumnGroups: QueryList<FooterColumnGroup>;
 
-  	public isEditableSet: boolean;
-
     public _value: any[];
 
     public dataToRender: any[];
@@ -771,6 +769,10 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
     public rowExpansionTemplate: TemplateRef<any>;
 
     public emptyMessageTemplate: TemplateRef<any>;
+
+    public paginatorLeftTemplate: TemplateRef<any>;
+
+    public paginatorRightTemplate: TemplateRef<any>;
 
     public scrollBarWidth: number;
 
@@ -855,6 +857,14 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
 
                 case 'emptymessage':
                     this.emptyMessageTemplate = item.template;
+                break;
+
+                case 'paginatorLeft':
+                    this.paginatorLeftTemplate = item.template;
+                break;
+
+                case 'paginatorRight':
+                    this.paginatorRightTemplate = item.template;
                 break;
             }
         });
@@ -1195,8 +1205,8 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
         if(!column.sortable) {
             return;
         }
-        let targetNode = event.target.nodeName;
-        if((targetNode == 'TH' && this.domHandler.hasClass(event.target, 'ui-sortable-column')) || ((targetNode == 'SPAN' || targetNode == 'DIV') && !this.domHandler.hasClass(event.target, 'ui-clickable'))) {
+        let targetNode = event.target;
+        if(this.domHandler.hasClass(targetNode, 'ui-sortable-column') || this.domHandler.hasClass(targetNode, 'ui-column-title') || this.domHandler.hasClass(targetNode, 'ui-sortable-column-icon')) {
             if(!this.immutable) {
                 this.preventSortPropagation = true;
             }
@@ -1529,10 +1539,12 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
                         if(selected) {
                             this._selection = null;
                             this.selectionKeys = {};
+                            this.selectionChange.emit(this.selection);
                             this.onRowUnselect.emit({originalEvent: event, data: rowData, type: 'row'});
                         }
                         else {
                             this._selection = rowData;
+                            this.selectionChange.emit(this.selection);
                             this.onRowSelect.emit({originalEvent: event, data: rowData, type: 'row'});
                             if(dataKeyValue) {
                                 this.selectionKeys = {};
@@ -2538,7 +2550,13 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
             for(let i = 0; i < this.columns.length; i++) {
                 let column = this.columns[i];
                 if(column.exportable && column.field) {
-                    csv += '"' + this.resolveFieldData(record, column.field) + '"';
+                    let cellData = this.resolveFieldData(record, column.field);
+                    if(cellData)
+                        cellData = String(cellData).replace(/"/g, '""');
+                    else
+                        cellData = '';
+
+                     csv += '"' + cellData + '"';
 
                     if(i < (this.columns.length - 1)) {
                         csv += this.csvSeparator;

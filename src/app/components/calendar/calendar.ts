@@ -35,7 +35,7 @@ export interface LocaleSettings {
                     ><button type="button" [icon]="icon" pButton *ngIf="showIcon" (click)="onButtonClick($event,inputfield)" class="ui-datepicker-trigger ui-calendar-button"
                     [ngClass]="{'ui-state-disabled':disabled}" [disabled]="disabled" tabindex="-1"></button>
             </ng-template>
-            <div #datepicker class="ui-datepicker ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" [ngClass]="{'ui-datepicker-inline':inline,'ui-shadow':!inline,'ui-state-disabled':disabled,'ui-datepicker-timeonly':timeOnly}" 
+            <div #datepicker [class]="panelStyleClass" [ngClass]="{'ui-datepicker ui-widget ui-widget-content ui-helper-clearfix ui-corner-all': true, 'ui-datepicker-inline':inline,'ui-shadow':!inline,'ui-state-disabled':disabled,'ui-datepicker-timeonly':timeOnly}" 
                 [ngStyle]="{'display': inline ? 'inline-block' : (overlayVisible ? 'block' : 'none')}" (click)="onDatePickerClick($event)" [@overlayState]="inline ? 'visible' : (overlayVisible ? 'visible' : 'hidden')">
 
                 <div class="ui-datepicker-header ui-widget-header ui-helper-clearfix ui-corner-all" *ngIf="!timeOnly && (overlayVisible || inline)">
@@ -244,6 +244,8 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     @Input() autoZIndex: boolean = true;
     
     @Input() baseZIndex: number = 0;
+
+    @Input() panelStyleClass: string;
         
     @Output() onFocus: EventEmitter<any> = new EventEmitter();
     
@@ -974,13 +976,20 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     }
     
     incrementHour(event) {
-        let newHour = this.currentHour + this.stepHour;
+        const prevHour = this.currentHour;
+        const newHour = this.currentHour + this.stepHour;
 
         if(this.validateHour(newHour)) {
             if(this.hourFormat == '24')
                 this.currentHour = (newHour >= 24) ? (newHour - 24) : newHour;        
-            else if(this.hourFormat == '12')
+            else if(this.hourFormat == '12') {
+                // Before the AM/PM break, now after
+                if (prevHour < 12 && newHour > 11) {
+                    this.pm = !this.pm;
+                }
+
                 this.currentHour = (newHour >= 13) ? (newHour - 12) : newHour;
+            }
             
             this.updateTime();
         }
@@ -989,13 +998,18 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     }
     
     decrementHour(event) {
-        let newHour = this.currentHour - this.stepHour;
+        const newHour = this.currentHour - this.stepHour;
         
         if(this.validateHour(newHour)) {
             if(this.hourFormat == '24')
                 this.currentHour = (newHour < 0) ? (24 + newHour) : newHour;        
-            else if(this.hourFormat == '12')
+            else if(this.hourFormat == '12') {
+                // If we were at noon/midnight, then switch
+                if (this.currentHour === 12) {
+                    this.pm = !this.pm;
+                }
                 this.currentHour = (newHour <= 0) ? (12 + newHour) : newHour;
+            }
                 
             this.updateTime();
         }
