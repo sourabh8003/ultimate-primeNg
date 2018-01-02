@@ -20,4 +20,12 @@ export interface MenuItem {
     styleClass?:string;
     title?: string;
     id?: string;
+    toolTipMessage?: string;
+    toolTipPosition?: string;
+    toolTipEvent?: string;
+    positionStyles?: string;
+    toolTipDisabled?: boolean;
+    toolTipAppendTo?: string;
+    toolTipStyleClasses?: string;
+    toolTipEscape?: boolean;
 }
