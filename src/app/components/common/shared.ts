@@ -37,17 +37,34 @@ export class PrimeTemplate {
 })
 export class TemplateWrapper implements OnInit, OnDestroy {
 
-    @Input() item: any;
-
     @Input() index: number;
 
     @Input('pTemplateWrapper') templateRef: TemplateRef<any>;
 
     view: EmbeddedViewRef<any>;
 
+    _item: any;
+
     constructor(public viewContainer: ViewContainerRef) {}
 
     ngOnInit() {
+        this.render();
+    }
+
+    set item(item: any) {
+        this._item = item;
+
+        if(this.view) {
+            this.view.destroy();
+            this.render();
+        }
+    }
+
+    @Input() get item(): any {
+        return this._item;
+    }
+
+    render() {
         this.view = this.viewContainer.createEmbeddedView(this.templateRef, {
             '\$implicit': this.item,
             'index': this.index
@@ -170,143 +187,6 @@ export class FooterColumnGroup {
 }
 
 @Component({
-    selector: 'p-columnBodyTemplateLoader',
-    template: ``
-})
-export class ColumnBodyTemplateLoader implements OnInit, OnChanges, OnDestroy {
-
-    @Input() column: any;
-
-    @Input() rowData: any;
-
-    @Input() rowIndex: number;
-
-    view: EmbeddedViewRef<any>;
-
-    constructor(public viewContainer: ViewContainerRef) {}
-
-    ngOnInit() {
-        this.view = this.viewContainer.createEmbeddedView(this.column.bodyTemplate, {
-            '\$implicit': this.column,
-            'rowData': this.rowData,
-            'rowIndex': this.rowIndex
-        });
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if(!this.view) {
-            return;
-        }
-
-        if('rowIndex' in changes) {
-            this.view.context.rowIndex = changes['rowIndex'].currentValue;
-        }
-    }
-
-    ngOnDestroy() {
-		this.view.destroy();
-	}
-}
-
-@Component({
-    selector: 'p-columnHeaderTemplateLoader',
-    template: ``
-})
-export class ColumnHeaderTemplateLoader implements OnInit, OnDestroy {
-
-    @Input() column: any;
-
-    view: EmbeddedViewRef<any>;
-
-    constructor(public viewContainer: ViewContainerRef) {}
-
-    ngOnInit() {
-        this.view = this.viewContainer.createEmbeddedView(this.column.headerTemplate, {
-            '\$implicit': this.column
-        });
-    }
-
-    ngOnDestroy() {
-		this.view.destroy();
-	}
-}
-
-@Component({
-    selector: 'p-columnFooterTemplateLoader',
-    template: ``
-})
-export class ColumnFooterTemplateLoader implements OnInit, OnDestroy {
-
-    @Input() column: any;
-
-    view: EmbeddedViewRef<any>;
-
-    constructor(public viewContainer: ViewContainerRef) {}
-
-    ngOnInit() {
-        this.view = this.viewContainer.createEmbeddedView(this.column.footerTemplate, {
-            '\$implicit': this.column
-        });
-    }
-
-    ngOnDestroy() {
-		this.view.destroy();
-	}
-}
-
-@Component({
-    selector: 'p-columnFilterTemplateLoader',
-    template: ``
-})
-export class ColumnFilterTemplateLoader implements OnInit, OnDestroy {
-
-    @Input() column: any;
-
-    view: EmbeddedViewRef<any>;
-
-    constructor(public viewContainer: ViewContainerRef) {}
-
-    ngOnInit() {
-        this.view = this.viewContainer.createEmbeddedView(this.column.filterTemplate, {
-            '\$implicit': this.column
-        });
-    }
-
-    ngOnDestroy() {
-		this.view.destroy();
-	}
-}
-
-@Component({
-    selector: 'p-columnEditorTemplateLoader',
-    template: ``
-})
-export class ColumnEditorTemplateLoader implements OnInit, OnDestroy {
-
-    @Input() column: any;
-
-    @Input() rowData: any;
-
-    @Input() rowIndex: any;
-
-    view: EmbeddedViewRef<any>;
-
-    constructor(public viewContainer: ViewContainerRef) {}
-
-    ngOnInit() {
-        this.view = this.viewContainer.createEmbeddedView(this.column.editorTemplate, {
-            '\$implicit': this.column,
-            'rowData': this.rowData,
-            'rowIndex': this.rowIndex
-        });
-    }
-
-    ngOnDestroy() {
-		this.view.destroy();
-	}
-}
-
-@Component({
     selector: 'p-templateLoader',
     template: ``
 })
@@ -314,13 +194,21 @@ export class TemplateLoader implements OnInit, OnDestroy {
 
     @Input() template: TemplateRef<any>;
 
-    @Input() data: any;
+    _data: any;
 
     view: EmbeddedViewRef<any>;
 
     constructor(public viewContainer: ViewContainerRef) {}
 
     ngOnInit() {
+        this.render();
+    }
+
+    render() {
+        if(this.view) {
+            this.view.destroy();
+        }
+
         if(this.template) {
             this.view = this.viewContainer.createEmbeddedView(this.template, {
                 '\$implicit': this.data
@@ -328,14 +216,25 @@ export class TemplateLoader implements OnInit, OnDestroy {
         }
     }
 
+    @Input() get data(): any {
+        return this._data;
+    }
+
+    set data(val: any) {
+        this._data = val;
+        this.render();
+    }
+
     ngOnDestroy() {
-		if (this.view) this.view.destroy();
+		if (this.view) {
+            this.view.destroy();
+        }
 	}
 }
 
 @NgModule({
     imports: [CommonModule],
-    exports: [Header,Footer,Column,TemplateWrapper,ColumnHeaderTemplateLoader,ColumnBodyTemplateLoader,ColumnFooterTemplateLoader,ColumnFilterTemplateLoader,PrimeTemplate,TemplateLoader,Row,HeaderColumnGroup,FooterColumnGroup,ColumnEditorTemplateLoader],
-    declarations: [Header,Footer,Column,TemplateWrapper,ColumnHeaderTemplateLoader,ColumnBodyTemplateLoader,ColumnFooterTemplateLoader,ColumnFilterTemplateLoader,PrimeTemplate,TemplateLoader,Row,HeaderColumnGroup,FooterColumnGroup,ColumnEditorTemplateLoader]
+    exports: [Header,Footer,Column,TemplateWrapper,PrimeTemplate,TemplateLoader,Row,HeaderColumnGroup,FooterColumnGroup],
+    declarations: [Header,Footer,Column,TemplateWrapper,PrimeTemplate,TemplateLoader,Row,HeaderColumnGroup,FooterColumnGroup]
 })
 export class SharedModule { }

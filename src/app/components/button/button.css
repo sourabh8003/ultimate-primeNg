@@ -11,6 +11,10 @@
     overflow: visible; /* the overflow property removes extra width in IE */
 } 
 
+p-button {
+    display: inline-block; 
+}
+
 .ui-button-icon-only { 
     width: 2em;
 } 
@@ -25,7 +29,8 @@
     padding: .25em 1em; 
 }
 
-.ui-button-icon-only .ui-button-text { 
+.ui-button-icon-only .ui-button-text,
+.ui-button-text-empty .ui-button-text { 
     padding: .25em; 
     text-indent: -9999999px; 
 }
