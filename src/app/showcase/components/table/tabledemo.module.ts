@@ -30,6 +30,10 @@ import { TableResponsiveDemo } from './tableresponsivedemo';
 import { TableContextMenuDemo } from './tablecontextmenudemo';
 import { TableColResizeDemo } from './tablecolresizedemo';
 import { TableColReorderDemo } from './tablecolreorderdemo';
+import { TableEditDemo } from './tableeditdemo';
+import { TableRowGroupDemo } from './tablerowgroupdemo';
+import { TabViewModule } from '../../../components/tabview/tabview';
+import { CodeHighlighterModule } from '../../../components/codehighlighter/codehighlighter';
 
 @NgModule({
 	imports: [
@@ -44,7 +48,9 @@ import { TableColReorderDemo } from './tablecolreorderdemo';
 		DropdownModule,
 		ButtonModule,
 		GrowlModule,
-		InputTextModule
+		InputTextModule,
+		TabViewModule,
+		CodeHighlighterModule
 	],
 	declarations: [
 		TableSubmenu,
@@ -65,7 +71,9 @@ import { TableColReorderDemo } from './tablecolreorderdemo';
 		TableResponsiveDemo,
 		TableContextMenuDemo,
 		TableColResizeDemo,
-		TableColReorderDemo
+		TableColReorderDemo,
+		TableEditDemo,
+		TableRowGroupDemo
 	]
 })
 export class TableDemoModule { }

@@ -22,7 +22,7 @@ import {BlockableUI} from '../common/blockableui';
                 <button *ngIf="!auto&&showUploadButton" type="button" [label]="uploadLabel" icon="fa-upload" pButton (click)="upload()" [disabled]="!hasFiles()"></button>
                 <button *ngIf="!auto&&showCancelButton" type="button" [label]="cancelLabel" icon="fa-close" pButton (click)="clear()" [disabled]="!hasFiles()"></button>
             
-                <p-templateLoader [template]="toolbarTemplate"></p-templateLoader>
+                <ng-container *ngTemplateOutlet="toolbarTemplate"></ng-container>
             </div>
             <div #content [ngClass]="{'ui-fileupload-content ui-widget-content ui-corner-bottom':true}" 
                 (dragenter)="onDragEnter($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
@@ -43,7 +43,7 @@ import {BlockableUI} from '../common/blockableui';
                         <ng-template ngFor [ngForOf]="files" [ngForTemplate]="fileTemplate"></ng-template>
                     </div>
                 </div>
-                <p-templateLoader [template]="contentTemplate"></p-templateLoader>
+                <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
             </div>
         </div>
         <span class="ui-button ui-fileupload-choose ui-widget ui-state-default ui-corner-all ui-button-text-icon-left" *ngIf="mode === 'basic'" 
@@ -147,7 +147,7 @@ export class FileUpload implements OnInit,AfterViewInit,AfterContentInit,OnDestr
 
     focus: boolean;
 
-    selfInputChange: boolean;
+    duplicateIEEvent: boolean;  // flag to recognize duplicate onchange event for file input
 
     constructor(private el: ElementRef, public domHandler: DomHandler, public sanitizer: DomSanitizer, public zone: NgZone){}
 
@@ -186,8 +186,8 @@ export class FileUpload implements OnInit,AfterViewInit,AfterContentInit,OnDestr
     }
 
     onFileSelect(event) {
-        if(this.isIE11() && this.selfInputChange) {
-            this.selfInputChange = false;
+        if(event.type !== 'drop' && this.isIE11() && this.duplicateIEEvent) {
+            this.duplicateIEEvent = false;
             return;
         }
 
@@ -217,7 +217,11 @@ export class FileUpload implements OnInit,AfterViewInit,AfterContentInit,OnDestr
             this.upload();
         }
 
-        this.clearInputElement();
+        if (event.type !== 'drop' && this.isIE11()) {
+          this.clearIEInput();
+        } else {
+          this.clearInputElement();
+        }
     }
 
     isFileSelected(file: File): boolean{
@@ -357,12 +361,15 @@ export class FileUpload implements OnInit,AfterViewInit,AfterContentInit,OnDestr
     }
 
     clearInputElement() {
-      if(this.advancedFileInput && this.advancedFileInput.nativeElement) {
-          if(this.isIE11()) {
-               this.selfInputChange = true; //IE11 fix to prevent onFileChange trigger again
-          }
+      if (this.advancedFileInput && this.advancedFileInput.nativeElement) {
+        this.advancedFileInput.nativeElement.value = '';
+      }
+    }
 
-          this.advancedFileInput.nativeElement.value = '';
+    clearIEInput() {
+      if (this.advancedFileInput && this.advancedFileInput.nativeElement) {
+        this.duplicateIEEvent = true; //IE11 fix to prevent onFileChange trigger again
+        this.advancedFileInput.nativeElement.value = '';
       }
     }
 

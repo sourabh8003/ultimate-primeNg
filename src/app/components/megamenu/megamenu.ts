@@ -78,8 +78,14 @@ export class MegaMenu {
     @Input() styleClass: string;
     
     @Input() orientation: string = 'horizontal';
+
+    @Input() autoZIndex: boolean = true;
+
+    @Input() baseZIndex: number = 0;
     
     activeItem: any;
+
+    hideTimeout: any;
                 
     constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2) {}
     
@@ -87,13 +93,20 @@ export class MegaMenu {
         if(menuitem.disabled) {
             return;
         }
+
+        if(this.hideTimeout) {
+            clearTimeout(this.hideTimeout);
+            this.hideTimeout = null;
+        }
         
         this.activeItem = item;
 
         if(menuitem.items) {
             let submenu = item.children[0].nextElementSibling;
             if (submenu) {
-                submenu.style.zIndex = ++DomHandler.zindex;
+                if (this.autoZIndex) {
+                    submenu.style.zIndex = String(this.baseZIndex + (++DomHandler.zindex));
+                }
 
                 if (this.orientation === 'horizontal') {
                     submenu.style.top = this.domHandler.getOuterHeight(item.children[0]) + 'px';
@@ -108,7 +121,9 @@ export class MegaMenu {
     }
     
     onItemMouseLeave(event, link) {
-        this.activeItem = null;
+        this.hideTimeout = setTimeout(() => {
+            this.activeItem = null;
+        }, 1000);
     }
     
     itemClick(event, item: MenuItem) {

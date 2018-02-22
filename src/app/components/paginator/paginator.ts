@@ -11,7 +11,7 @@ import {SharedModule} from '../common/shared';
         <div [class]="styleClass" [ngStyle]="style" [ngClass]="'ui-paginator ui-widget ui-widget-header ui-unselectable-text ui-helper-clearfix'"
             *ngIf="alwaysShow ? true : (pageLinks && pageLinks.length > 1)">
             <div class="ui-paginator-left-content" *ngIf="templateLeft">
-                <p-templateLoader [template]="templateLeft" [data]="paginatorState"></p-templateLoader>
+                <ng-container *ngTemplateOutlet="templateLeft; context: {$implicit: paginatorState}"></ng-container>
             </div>
             <a href="#" class="ui-paginator-first ui-paginator-element ui-state-default ui-corner-all"
                     (click)="changePageToFirst($event)" [ngClass]="{'ui-state-disabled':isFirstPage()}" [tabindex]="isFirstPage() ? -1 : null">
@@ -34,9 +34,9 @@ import {SharedModule} from '../common/shared';
                 <span class="fa fa-step-forward"></span>
             </a>
             <p-dropdown [options]="rowsPerPageItems" [(ngModel)]="rows" *ngIf="rowsPerPageOptions" 
-                (onChange)="onRppChange($event)" [lazy]="false" [autoWidth]="false"></p-dropdown>
+                (onChange)="onRppChange($event)" [lazy]="false" [autoWidth]="false" [appendTo]="dropdownAppendTo"></p-dropdown>
             <div class="ui-paginator-right-content" *ngIf="templateRight">
-                <p-templateLoader [template]="templateRight" [data]="paginatorState"></p-templateLoader>
+                <ng-container *ngTemplateOutlet="templateRight; context: {$implicit: paginatorState}"></ng-container>
             </div>
         </div>
     `
@@ -56,6 +56,8 @@ export class Paginator implements OnInit {
     @Input() templateLeft: TemplateRef<any>;
     
     @Input() templateRight: TemplateRef<any>;
+
+    @Input() dropdownAppendTo: any;
 
     pageLinks: number[];
 

@@ -15,7 +15,8 @@
             <h3>Import</h3>
 <pre>
 <code class="language-typescript" pCode ngNonBindable>
-import &#123;PanelMenuModule,MenuItem&#125; from 'primeng/primeng';
+import &#123;PanelMenuModule&#125; from 'primeng/panelmenu';
+import &#123;MenuItem&#125; from 'primeng/api';
 </code>
 </pre>
 
@@ -233,13 +234,13 @@ export class PanelMenuDemo &#123;
                         label: 'New', 
                         icon: 'fa-plus',
                         items: [
-                            &#123;label: 'Project'&#125;,
-                            &#123;label: 'Other'&#125;,
+                            &#123;label: 'Project', icon: 'fa-lock'&#125;,
+                            &#123;label: 'Other', icon: 'fa-list'&#125;
                         ]
                     &#125;,
-                    &#123;label: 'Open'&#125;,
+                    &#123;label: 'Open', icon: 'fa-external-link'&#125;,
                     &#123;separator: true&#125;,
-                    &#123;label: 'Quit'&#125;
+                    &#123;label: 'Quit', icon: 'fa-close'&#125;
                 ]
             &#125;,
             &#123;
@@ -255,7 +256,8 @@ export class PanelMenuDemo &#123;
                 icon: 'fa-question',
                 items: [
                     &#123;
-                        label: 'Contents'
+                        label: 'Contents',
+                        icon: 'fa-bars'
                     &#125;,
                     &#123;
                         label: 'Search', 
@@ -270,7 +272,8 @@ export class PanelMenuDemo &#123;
                                 ]
                             &#125;,
                             &#123;
-                                label: 'File'
+                                label: 'File',
+                                icon: 'fa-file',
                             &#125;
                     ]&#125;
                 ]

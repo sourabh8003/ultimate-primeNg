@@ -20,7 +20,8 @@
             <h3>Import</h3>
 <pre>
 <code class="language-typescript" pCode ngNonBindable>
-import &#123;SlideMenuModule,MenuItem&#125; from 'primeng/primeng';
+import &#123;SlideMenuModule&#125; from 'primeng/slidemenu';
+import &#123;MenuItem&#125; from 'primeng/api';
 </code>
 </pre>
 
@@ -162,6 +163,18 @@ export class SlideMenuDemo &#123;
                             <td>any</td>
                             <td>null</td>
                             <td>Target element to attach the overlay, valid values are "body" or a local ng-template variable of another element.</td>
+                        </tr>
+                        <tr>
+                            <td>baseZIndex</td>
+                            <td>number</td>
+                            <td>0</td>
+                            <td>Base zIndex value to use in layering.</td>
+                        </tr>
+                        <tr>
+                            <td>autoZIndex</td>
+                            <td>boolean</td>
+                            <td>true</td>
+                            <td>Whether to automatically manage layering.</td>
                         </tr>
                     </tbody>
                 </table>

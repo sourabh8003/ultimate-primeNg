@@ -2,7 +2,7 @@ import { NgModule, Component, ElementRef, AfterContentInit, OnDestroy, Input, Ou
     ContentChildren, QueryList, ChangeDetectorRef, Inject, forwardRef} from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Header } from '../common/shared';
+import { SharedModule, Header } from '../common/shared';
 import { BlockableUI } from '../common/blockableui';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -13,7 +13,7 @@ let idx: number = 0;
     template: `
         <div class="ui-accordion-header ui-state-default ui-corner-all" [ngClass]="{'ui-state-active': selected,'ui-state-disabled':disabled}">
             <a href="#" [attr.id]="id" [attr.aria-controls]="id + '-content'" role="tab" [attr.aria-expanded]="selected" (click)="toggle($event)" (keydown.space)="toggle($event)">
-                <span class="ui-accordion-toggle-icon fa fa-fw" [ngClass]="{'fa-caret-down': selected, 'fa-caret-right': !selected}"></span>
+                <span class="ui-accordion-toggle-icon" [ngClass]="selected ? accordion.collapseIcon : accordion.expandIcon"></span>
                 <span class="ui-accordion-header-text" *ngIf="!hasHeaderFacet">
                     {{header}}
                 </span>
@@ -134,6 +134,10 @@ export class Accordion implements BlockableUI, AfterContentInit, OnDestroy {
     @Input() style: any;
     
     @Input() styleClass: string;
+
+    @Input() expandIcon: string = 'fa fa-fw fa-caret-right';
+
+    @Input() collapseIcon: string = 'fa fa-fw fa-caret-down';
     
     @Input() lazy: boolean;
 
@@ -199,7 +203,7 @@ export class Accordion implements BlockableUI, AfterContentInit, OnDestroy {
 
 @NgModule({
     imports: [CommonModule],
-    exports: [Accordion,AccordionTab],
+    exports: [Accordion,AccordionTab,SharedModule],
     declarations: [Accordion,AccordionTab]
 })
 export class AccordionModule { }

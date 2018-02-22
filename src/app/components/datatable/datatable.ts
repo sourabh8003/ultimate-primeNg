@@ -140,12 +140,12 @@ export class ColumnFooters {
                         <span class="fa fa-fw" [ngClass]="dt.isRowGroupExpanded(rowData) ? dt.expandedIcon : dt.collapsedIcon"></span>
                     </a>
                     <span class="ui-rowgroup-header-name">
-                        <ng-container *ngTemplateOutlet="col.rowGroupHeaderTemplate; context: {$implicit: rowData}"></ng-container>
+                        <ng-container *ngTemplateOutlet="dt.rowGroupHeaderTemplate; context: {$implicit: rowData}"></ng-container>
                     </span>
                 </td>
             </tr>
             <tr #rowElement *ngIf="!dt.expandableRowGroups||dt.isRowGroupExpanded(rowData)"
-                     (dblclick)="dt.rowDblclick($event,rowData)" (contextmenu)="dt.onRowRightClick($event,rowData)" (touchend)="dt.handleRowTouchEnd($event)"
+                    (click)="dt.handleRowClick($event, rowData, rowIndex)" (dblclick)="dt.rowDblclick($event,rowData)" (contextmenu)="dt.onRowRightClick($event,rowData)" (touchend)="dt.handleRowTouchEnd($event)"
                     [ngClass]="[even&&dt.rowGroupMode!='rowspan'? 'ui-datatable-even':'',
                                 odd&&dt.rowGroupMode!='rowspan'?'ui-datatable-odd':'',
                                 dt.isSelected(rowData)? 'ui-state-highlight': '',
@@ -192,7 +192,9 @@ export class ColumnFooters {
         <tr *ngIf="dt.isEmpty()" class="ui-widget-content ui-datatable-emptymessage-row" [style.visibility]="dt.loading ? 'hidden' : 'visible'">
             <td [attr.colspan]="dt.visibleColumns().length" class="ui-datatable-emptymessage">
                 <span *ngIf="!dt.emptyMessageTemplate">{{dt.emptyMessage}}</span>
-                <ng-container *ngTemplateOutlet="dt.emptyMessageTemplate"></ng-container>
+                <ng-template *ngIf="dt.emptyMessageTemplate">
+                    <ng-container *ngTemplateOutlet="dt.emptyMessageTemplate"></ng-container>
+                </ng-template>
             </td>
         </tr>
     `
@@ -2532,8 +2534,7 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
                 let column = this.columns[i];
                 if(column.exportable && column.field) {
                     let cellData = this.resolveFieldData(record, column.field);
-
-                    if(cellData != null)
+                    if(cellData!= null)
                         cellData = String(cellData).replace(/"/g, '""');
                     else
                         cellData = '';
