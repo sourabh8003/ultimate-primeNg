@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DomHandler } from '../dom/domhandler';
 import { MenuItem } from '../common/menuitem';
 import { Location } from '@angular/common';
+import {TooltipModule} from '../tooltip/tooltip';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -14,7 +15,8 @@ import { RouterModule } from '@angular/router';
                 <li *ngIf="child.separator" class="ui-menu-separator ui-widget-content" [ngClass]="{'ui-helper-hidden': child.visible === false}">
                 <li *ngIf="!child.separator" #listItem [ngClass]="{'ui-menuitem ui-corner-all':true,
                         'ui-menu-parent':child.items,'ui-menuitem-active':listItem==activeItem,'ui-helper-hidden': child.visible === false}"
-                        (mouseenter)="onItemMouseEnter($event,listItem,child)" (mouseleave)="onItemMouseLeave($event)" (click)="onItemMenuClick($event, listItem, child)">
+                        (mouseenter)="onItemMouseEnter($event,listItem,child)" (mouseleave)="onItemMouseLeave($event)" (click)="onItemMenuClick($event, listItem, child)"
+                        [pTooltip]="child.toolTipMessage" [tooltipPosition]="child.toolTipPosition"  [positionStyle]="child.positionStyles" [tooltipDisabled]="child.toolTipDisabled" [tooltipStyleClass]="child.toolTipStyleClasses" [escape]="child.toolTipEscape">
                     <a *ngIf="!child.routerLink" [href]="child.url||'#'" [attr.data-automationid]="child.automationId" [attr.target]="child.target" [attr.title]="child.title" [attr.id]="child.id" (click)="itemClick($event, child)"
                          [ngClass]="{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}" [ngStyle]="child.style" [class]="child.styleClass">
                         <span class="ui-menuitem-icon fa fa-fw" *ngIf="child.icon" [ngClass]="child.icon"></span>
@@ -50,13 +52,13 @@ export class MenubarSub implements OnDestroy {
     documentClickListener: any;
 
     menuClick: boolean;
-  
+
     menuHoverActive: boolean = false;
 
     activeItem: any;
 
     hideTimeout: any;
-    
+
     activeMenu: any;
 
     constructor(public domHandler: DomHandler, public renderer: Renderer2) { }
@@ -67,7 +69,7 @@ export class MenubarSub implements OnDestroy {
             if (menuitem.disabled) {
                 return;
             }
-            
+
             this.activeItem = this.activeMenu ? (this.activeMenu.isEqualNode(item)? null: item) : item;
             let nextElement = <HTMLLIElement>item.children[0].nextElementSibling;
             if (nextElement) {
@@ -131,7 +133,7 @@ export class MenubarSub implements OnDestroy {
                     sublist.style.left = this.domHandler.getOuterWidth(item.children[0]) + 'px';
                 }
             }
-  
+
             this.activeMenu = this.activeMenu ? (this.activeMenu.isEqualNode(item)? null: item) : item;
         }
     }
@@ -212,7 +214,7 @@ export class Menubar {
 }
 
 @NgModule({
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, TooltipModule],
     exports: [Menubar, RouterModule],
     declarations: [Menubar, MenubarSub]
 })
