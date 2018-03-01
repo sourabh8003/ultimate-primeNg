@@ -23,8 +23,8 @@ export const CHIPS_VALUE_ACCESSOR: any = {
                     <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: item}"></ng-container>
                 </li>
                 <li class="ui-chips-input-token">
-                    <input #inputtext type="text" [attr.id]="inputId" [attr.placeholder]="(value && value.length ? null : placeholder)" [attr.tabindex]="tabindex" (keydown)="onKeydown($event,inputtext)" 
-                        (focus)="onInputFocus()" (blur)="onInputBlur($event,inputtext)" [disabled]="maxedOut||disabled" [disabled]="disabled" [ngStyle]="inputStyle" [class]="inputStyleClass"
+                    <input #inputtext type="text" [attr.id]="inputId" [attr.placeholder]="(value && value.length ? null : placeholder)" [attr.tabindex]="tabindex" (keydown)="onKeydown($event,inputtext)"
+                           (focus)="onInputFocus($event)" (blur)="onInputBlur($event,inputtext)" [disabled]="maxedOut||disabled" [disabled]="disabled" [ngStyle]="inputStyle" [class]="inputStyleClass"
                            [pTooltip]="toolTipMessage" [tooltipPosition]="toolTipPosition" [tooltipEvent]="toolTipEvent" [positionStyle]="positionStyles" [tooltipDisabled]="toolTipDisabled" [tooltipStyleClass]="toolTipStyleClasses" [escape]="toolTipEscape">
                 </li>
             </ul>
