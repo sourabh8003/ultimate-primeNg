@@ -58,7 +58,7 @@
         "karma-coverage-istanbul-reporter": "^1.2.1",
         "karma-jasmine": "~1.1.0",
         "karma-jasmine-html-reporter": "^0.2.2",
-        "moment": "2.18.1",
+        "moment": "2.19.3",
         "prismjs": "1.6.0",
         "protractor": "~5.1.2",
         "quill": "1.1.8",
