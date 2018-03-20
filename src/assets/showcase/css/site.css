@@ -993,6 +993,44 @@ a {
     transform: scale(1.05);
 }
 
+.home .why-templates {
+    background-color: #20272a;
+    text-align: center;
+    color: #ffffff;
+    padding: 30px;
+}
+
+.home .why-templates h3 {
+    margin: 10px 0;
+    display: block;
+}
+
+.home .why-templates hr {
+    border: 1px dotted solid #262626;
+    margin-bottom: 20px;
+}
+
+.home .why-templates img {
+    width: 100%;
+}
+
+.home .why-templates .ui-g > div {
+    padding: .5em 1em;
+}
+
+.home .why-templates ul {
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    list-style-type: none;
+}
+
+.home .why-templates  ul > li {
+    padding-bottom: 10px;
+    text-align: left;
+    text-align: center;
+}
+
 /* PRO */
 .home .prosupport,
 .support-image {

@@ -1,4 +1,11 @@
-### There is no guarantee in receiving an immediate response in GitHub Issue Tracker, If you'd like to secure our response, you may consider *PrimeNG PRO Support* where support is provided within 4 business hours
+If you have a PrimeNG PRO Support subscription please post your issue at;
+
+https://pro.primefaces.org 
+
+where our team will respond within 4 business hours.
+
+If you do not have a PrimeNG PRO Support subscription, fill-in the report below. Please note that
+your issue will be added to the waiting list of community issues and will be reviewed on a first-come first-serve basis, as a result, the support team is unable to guarantee a specific schedule on when it will be reviewed. Thank you for your understanding.
 
 **I'm submitting a ...**  (check one with "x")
 ```
@@ -10,7 +17,7 @@
 **Plunkr Case (Bug Reports)**
 Please fork the plunkr below and create a case demonstrating your bug report. Issues without a plunkr have much less possibility to be reviewed.
 
-http://plnkr.co/edit/Nxca3ovCbtvx9kpGds0q?p=preview
+http://plnkr.co/edit/qtZi5lB3DjkNt7Kdivg9?p=preview
 
 **Current behavior**
 <!-- Describe how the bug manifests. -->
@@ -31,10 +38,10 @@ https://plnkr.co or similar (you can use this template as a starting point: http
 **Please tell us about your environment:**
 <!-- Operating system, IDE, package manager, HTTP server, ... -->
 
-* **Angular version:** 2.0.X
+* **Angular version:** 5.X
 <!-- Check whether this is still an issue in the most recent Angular version -->
 
-* **PrimeNG version:** 2.0.X
+* **PrimeNG version:** 5.X
 <!-- Check whether this is still an issue in the most recent Angular version -->
 
 * **Browser:** [all | Chrome XX | Firefox XX | IE XX | Safari XX | Mobile Chrome XX | Android X.X Web Browser | iOS XX Safari | iOS XX UIWebView | iOS XX WKWebView ]

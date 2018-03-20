@@ -1,4 +1,4 @@
-import {NgModule,Component,OnDestroy,Input,Output,EventEmitter,Optional} from '@angular/core';
+import {NgModule,Component,OnInit,OnDestroy,Input,Output,EventEmitter,Optional} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Message} from '../common/message';
 import {MessageService} from '../common/messageservice';
@@ -26,7 +26,7 @@ import {Subscription}   from 'rxjs/Subscription';
         </div>
     `
 })
-export class Messages implements OnDestroy {
+export class Messages implements OnInit, OnDestroy {
 
     @Input() value: Message[];
 
@@ -36,18 +36,27 @@ export class Messages implements OnDestroy {
     
     @Input() styleClass: string;
 
+    @Input() enableService: boolean = true;
+
+    @Input() key: string;
+
     @Output() valueChange: EventEmitter<Message[]> = new EventEmitter<Message[]>();
 
     subscription: Subscription;
 
-    constructor(@Optional() public messageService: MessageService) {
-        if(messageService) {
-            this.subscription = messageService.messageObserver.subscribe((messages: any) => {
+    constructor(@Optional() public messageService: MessageService) {}
+
+    ngOnInit() {
+        if(this.messageService && this.enableService) {
+            this.subscription = this.messageService.messageObserver.subscribe((messages: any) => {
                 if(messages) {
-                    if(messages instanceof Array)
-                        this.value = this.value ? [...this.value, ...messages] : [...messages];
-                    else
-                        this.value = this.value ? [...this.value, ...[messages]]: [messages];
+                    if(messages instanceof Array) {
+                        let filteredMessages = messages.filter(m => this.key === m.key);
+                        this.value = this.value ? [...this.value, ...filteredMessages] : [...filteredMessages];
+                    }
+                    else if (this.key === messages.key) {
+                        this.value = this.value ? [...this.value, ...[messages]] : [messages];
+                    }
                 }
                 else {
                     this.value = null;

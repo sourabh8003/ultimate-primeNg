@@ -2,8 +2,8 @@
 
 <div class="content-section introduction">
     <div>
-        <span class="feature-title">Table - <span class="subitem">Column Reorder</span></span>
-        <span>Order of the columns can be changed using drag and drop.</span>
+        <span class="feature-title">Table - <span class="subitem">Reorder</span></span>
+        <span>Order of the columns and rows can be changed using drag and drop.</span>
     </div>
 </div>
 
@@ -11,13 +11,17 @@
     <p-table [columns]="cols" [value]="cars" [reorderableColumns]="true">
         <ng-template pTemplate="header" let-columns>
             <tr>
+                <th style="width:2em"></th>
                 <th *ngFor="let col of columns" pReorderableColumn>
                     {{col.header}}
                 </th>
             </tr>
         </ng-template>
-        <ng-template pTemplate="body" let-rowData let-columns="columns">
-            <tr>
+        <ng-template pTemplate="body" let-rowData let-columns="columns" let-index="rowIndex">
+            <tr [pReorderableRow]="index">
+                <td>
+                    <i class="fa fa-bars" pReorderableRowHandle></i>
+                </td>
                 <td *ngFor="let col of columns">
                     {{rowData[col.field]}}
                 </td>
@@ -68,13 +72,17 @@ export class TableColReorderDemo implements OnInit &#123;
 &lt;p-table [columns]="cols" [value]="cars" [reorderableColumns]="true"&gt;
     &lt;ng-template pTemplate="header" let-columns&gt;
         &lt;tr&gt;
+            &lt;th style="width:2em"&gt;&lt;/th&gt;
             &lt;th *ngFor="let col of columns" pReorderableColumn&gt;
                 &#123;&#123;col.header&#125;&#125;
             &lt;/th&gt;
         &lt;/tr&gt;
     &lt;/ng-template&gt;
-    &lt;ng-template pTemplate="body" let-rowData let-columns="columns"&gt;
-        &lt;tr&gt;
+    &lt;ng-template pTemplate="body" let-rowData let-columns="columns" let-index="rowIndex"&gt;
+        &lt;tr [pReorderableRow]="index"&gt;
+            &lt;td&gt;
+                &lt;i class="fa fa-bars" pReorderableRowHandle&gt;&lt;/i&gt;
+            &lt;/td&gt;
             &lt;td *ngFor="let col of columns"&gt;
                 &#123;&#123;rowData[col.field]&#125;&#125;
             &lt;/td&gt;

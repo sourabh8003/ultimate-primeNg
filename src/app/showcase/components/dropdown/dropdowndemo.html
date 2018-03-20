@@ -7,7 +7,7 @@
 
 <div class="content-section implementation">
     <h3 class="first">Single</h3>
-    <p-dropdown [options]="cities" [(ngModel)]="selectedCity" placeholder="Select a City" optionLabel="name"></p-dropdown>
+    <p-dropdown [options]="cities" [(ngModel)]="selectedCity" placeholder="Select a City" optionLabel="name" [showClear]="true"></p-dropdown>
     <p>Selected City: {{selectedCity ? selectedCity.name : 'none'}}</p>
     
     <h3>Editable</h3>
@@ -397,6 +397,12 @@ export class MyModel &#123;
                             <td>false</td>
                             <td>Whether to display options as grouped when nested options are provided.</td>
                         </tr>
+                        <tr>
+                            <td>showClear</td>
+                            <td>boolean</td>
+                            <td>false</td>
+                            <td>When enabled, a clear icon is displayed to clear the value.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -484,6 +490,10 @@ clearFilter(dropdown: Dropdown) &#123;
                             <td>Container element.</td>
                         </tr>
                         <tr>
+                            <td>ui-dropdown-clearable</td>
+                            <td>Container element when showClear is on.</td>
+                        </tr>
+                        <tr>
                             <td>ui-dropdown-label</td>
                             <td>Element to display label of selected option.</td>
                         </tr>
@@ -535,7 +545,7 @@ clearFilter(dropdown: Dropdown) &#123;
 <pre>
 <code class="language-markup" pCode ngNonBindable>
 &lt;h3 class="first"&gt;Single&lt;/h3&gt;
-&lt;p-dropdown [options]="cities" [(ngModel)]="selectedCity" placeholder="Select a City" optionLabel="name"&gt;&lt;/p-dropdown&gt;
+&lt;p-dropdown [options]="cities" [(ngModel)]="selectedCity" placeholder="Select a City" optionLabel="name" [showClear]="true"&gt;&lt;/p-dropdown&gt;
 &lt;p&gt;Selected City: &#123;&#123;selectedCity ? selectedCity.name : 'none'&#125;&#125;&lt;/p&gt;
 
 &lt;h3&gt;Editable&lt;/h3&gt;

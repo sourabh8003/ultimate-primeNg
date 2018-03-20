@@ -378,6 +378,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
         this.onSelect.emit(option);
         this.updateFilledState();
         this._suggestions = null;
+
         if(focus) {
             this.focusInput();
         }
@@ -437,6 +438,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
         let removedValue = this.value[itemIndex];
         this.value = this.value.filter((val, i) => i!=itemIndex);
         this.onModelChange(this.value);
+        this.updateFilledState();
         this.onUnselect.emit(removedValue);
     }
 

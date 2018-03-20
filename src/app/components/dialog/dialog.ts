@@ -14,7 +14,7 @@ let idx: number = 0;
             [ngStyle]="style" [class]="styleClass" [style.width.px]="width" [style.height.px]="height" [style.minWidth.px]="minWidth" (mousedown)="moveOnTop()" [@dialogState]="visible ? 'visible' : 'hidden'"
             role="dialog" [attr.aria-labelledby]="id + '-label'">
             <div #titlebar class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix ui-corner-top"
-                (mousedown)="initDrag($event)" (mouseup)="endDrag($event)" *ngIf="showHeader">
+                (mousedown)="initDrag($event)" *ngIf="showHeader">
                 <span [attr.id]="id + '-label'" class="ui-dialog-title" *ngIf="header">{{header}}</span>
                 <span [attr.id]="id + '-label'" class="ui-dialog-title" *ngIf="headerFacet && headerFacet.first">
                     <ng-content select="p-header"></ng-content>
@@ -96,6 +96,12 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
     @Input() autoZIndex: boolean = true;
     
     @Input() baseZIndex: number = 0;
+
+    @Input() minX: number = 0;
+
+    @Input() minY: number = 0;
+
+    @Input() autoAlign: boolean = true;
         
     @ContentChildren(Header, {descendants: false}) headerFacet: QueryList<Header>;
     
@@ -118,6 +124,8 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
     dragging: boolean;
 
     documentDragListener: any;
+
+    documentDragEndListener: any;
     
     resizing: boolean;
 
@@ -146,6 +154,8 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
     executePostDisplayActions: boolean;
     
     initialized: boolean;
+
+    currentHeight: number;
     
     id: string = `ui-dialog-${idx++}`;
                 
@@ -175,12 +185,25 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
             this.onShow.emit({});
             this.positionOverlay();
             this.focus();
+            this.currentHeight = this.domHandler.getOuterHeight(this.containerViewChild.nativeElement);
             this.executePostDisplayActions = false;
-        } 
+        }
+        else if(this.autoAlign && this.visible) {
+            this.zone.runOutsideAngular(() => {
+                setTimeout(() => {
+                    let height = this.domHandler.getOuterHeight(this.containerViewChild.nativeElement);
+
+                    if(height !== this.currentHeight) {
+                        this.currentHeight = height;
+                        this.positionOverlay();
+                    }
+                }, 50);
+            });
+        }
     }
 
     focus() {
-        let focusable = this.domHandler.findSingle(this.containerViewChild.nativeElement, 'button, input, textarea, select');
+        let focusable = this.domHandler.findSingle(this.containerViewChild.nativeElement, 'button');
         if(focusable) {
             focusable.focus();
         }
@@ -219,6 +242,7 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
         this.onHide.emit({});
         this.unbindMaskClickListener();
         this.unbindGlobalListeners();
+        this.dragging = false;
         
         if(this.modal) {
             this.disableModality();
@@ -320,8 +344,7 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
     moveOnTop() {
         if(this.autoZIndex) {
             this.containerViewChild.nativeElement.style.zIndex = String(this.baseZIndex + (++DomHandler.zindex));
-        }
-        
+        } 
     }
     
     onCloseMouseDown(event: Event) {
@@ -346,12 +369,17 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
         if(this.dragging) {
             let deltaX = event.pageX - this.lastPageX;
             let deltaY = event.pageY - this.lastPageY;
-            let leftPos = parseInt(this.containerViewChild.nativeElement.style.left);
-            let topPos = parseInt(this.containerViewChild.nativeElement.style.top);
+            let leftPos = parseInt(this.containerViewChild.nativeElement.style.left) + deltaX;
+            let topPos = parseInt(this.containerViewChild.nativeElement.style.top) + deltaY;
 
-            this.containerViewChild.nativeElement.style.left = leftPos + deltaX + 'px';
-            this.containerViewChild.nativeElement.style.top = topPos + deltaY + 'px';
-            
+            if(leftPos >= this.minX) {
+                this.containerViewChild.nativeElement.style.left = leftPos + 'px';
+            }
+
+            if(topPos >= this.minY) {
+                this.containerViewChild.nativeElement.style.top = topPos + 'px';
+            }
+
             this.lastPageX = event.pageX;
             this.lastPageY = event.pageY;
         }
@@ -408,6 +436,7 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
     bindGlobalListeners() {
         if(this.draggable) {
             this.bindDocumentDragListener();
+            this.bindDocumentDragEndListener();
         }
         
         if(this.resizable) {
@@ -425,6 +454,7 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
     
     unbindGlobalListeners() {
         this.unbindDocumentDragListener();
+        this.unbindDocumentDragEndListener();
         this.unbindDocumentResizeListeners();
         this.unbindDocumentResponsiveListener();
         this.unbindDocumentEscapeListener();
@@ -441,6 +471,20 @@ export class Dialog implements AfterViewInit,AfterViewChecked,OnDestroy {
         if(this.documentDragListener) {
             window.document.removeEventListener('mousemove', this.documentDragListener);
             this.documentDragListener = null;
+        }
+    }
+
+    bindDocumentDragEndListener() {
+        this.zone.runOutsideAngular(() => {
+            this.documentDragEndListener = this.endDrag.bind(this);
+            window.document.addEventListener('mouseup', this.documentDragEndListener);
+        });
+    }
+    
+    unbindDocumentDragEndListener() {
+        if(this.documentDragEndListener) {
+            window.document.removeEventListener('mouseup', this.documentDragEndListener);
+            this.documentDragEndListener = null;
         }
     }
     

@@ -18,7 +18,7 @@ export const DROPDOWN_VALUE_ACCESSOR: any = {
     selector: 'p-dropdown',
     template: `
          <div #container [ngClass]="{'ui-dropdown ui-widget ui-state-default ui-corner-all ui-helper-clearfix':true,
-            'ui-state-disabled':disabled,'ui-dropdown-open':panelVisible,'ui-state-focus':focus}"
+            'ui-state-disabled':disabled,'ui-dropdown-open':panelVisible,'ui-state-focus':focus, 'ui-dropdown-clearable': showClear && !disabled}"
             (click)="onMouseclick($event)" [ngStyle]="style" [class]="styleClass">
             <div class="ui-helper-hidden-accessible" *ngIf="autoWidth">
                 <select [required]="required" [attr.name]="name" [attr.aria-label]="selectedOption ? selectedOption.label : ' '" tabindex="-1" aria-hidden="true">
@@ -44,6 +44,7 @@ export const DROPDOWN_VALUE_ACCESSOR: any = {
             <label [ngClass]="{'ui-dropdown-label ui-inputtext ui-corner-all ui-placeholder':true,'ui-dropdown-label-empty': (placeholder == null || placeholder.length === 0)}" *ngIf="!editable && (label == null)">{{placeholder||'empty'}}</label>
             <input #editableInput type="text" [attr.aria-label]="selectedOption ? selectedOption.label : ' '" class="ui-dropdown-label ui-inputtext ui-corner-all" *ngIf="editable" [disabled]="disabled" [attr.placeholder]="placeholder"
                         (click)="onEditableInputClick($event)" (input)="onEditableInputChange($event)" (focus)="onEditableInputFocus($event)" (blur)="onInputBlur($event)">
+            <i class="ui-dropdown-clear-icon fa fa-close" (click)="clear($event)" *ngIf="value != null && showClear && !disabled"></i>
             <div class="ui-dropdown-trigger ui-state-default ui-corner-right">
                 <span class="ui-clickable" [ngClass]="dropdownIcon"></span>
             </div>
@@ -153,6 +154,8 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
 
     @Input() group: boolean;
 
+    @Input() showClear: boolean;
+
     @Input() emptyFilterMessage: string = 'No results found';
     
     @Output() onChange: EventEmitter<any> = new EventEmitter();
@@ -218,6 +221,8 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
     public selfClick: boolean;
     
     public itemClick: boolean;
+
+    public clearClick: boolean;
     
     public hoveredItem: any;
     
@@ -321,7 +326,6 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
                 value: this.value
             });
         }
-        
     }
     
     ngAfterViewChecked() {
@@ -405,8 +409,9 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
         }
         
         this.selfClick = true;
+        this.clearClick = this.domHandler.hasClass(event.target, 'ui-dropdown-clear-icon');
         
-        if(!this.itemClick) {
+        if(!this.itemClick && !this.clearClick) {
             this.focusViewChild.nativeElement.focus();
             
             if(this.panelVisible)
@@ -581,8 +586,10 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
             
             //enter
             case 13:
-                this.hide();
-
+                if (!this.filter || (this.optionsToDisplay && this.optionsToDisplay.length > 0)) {
+                    this.hide();
+                }
+                
                 event.preventDefault();
             break;
             
@@ -630,12 +637,12 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
         }
     }
     
-    findOption(val: any, opts: any[]): SelectItem {
-        if(this.group) {
+    findOption(val: any, opts: any[], inGroup?: boolean): SelectItem {
+        if(this.group && !inGroup) {
             let opt: SelectItem;
             if(opts && opts.length) {
                 for(let optgroup of opts) {
-                    opt = this.findOption(val, optgroup.items);
+                    opt = this.findOption(val, optgroup.items, true);
                     if(opt) {
                         break;
                     }
@@ -720,6 +727,19 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
 
     updateFilledState() {
         this.filled = (this.value != null);
+    }
+
+    clear(event: Event) {
+        this.clearClick = true;
+        this.value = null;
+        this.onModelChange(this.value);
+        this.onChange.emit({
+            originalEvent: event,
+            value: this.value
+        });
+        this.updateSelectedOption(this.value);
+        this.updateEditableLabel();
+        this.updateFilledState();
     }
     
     ngOnDestroy() {

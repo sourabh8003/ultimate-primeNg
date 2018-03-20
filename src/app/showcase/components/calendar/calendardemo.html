@@ -9,7 +9,7 @@
     <div class="ui-g ui-fluid">
         <div class="ui-g-12 ui-md-4">
             <h3>Basic</h3>
-            <p-calendar [(ngModel)]="date1" tabindex="0" panelStyleClass="yooo"></p-calendar> {{date1|date}}
+            <p-calendar [(ngModel)]="date1"></p-calendar> {{date1|date}}
         </div>
 
         <div class="ui-g-12 ui-md-4">
@@ -603,6 +603,13 @@ export class MyModel &#123;
                                 event.year: New year
                             </td>
                             <td>Callback to invoke when a month is changed using the navigators.</td>
+                        </tr>                        
+                        <tr>
+                            <td>onYearChange</td>
+                            <td>event.month: New month <br />
+                                event.year: New year
+                            </td>
+                            <td>Callback to invoke when a year is changed using the navigators.</td>
                         </tr>
                     </tbody>
                 </table>
