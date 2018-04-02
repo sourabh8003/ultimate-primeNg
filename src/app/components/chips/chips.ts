@@ -1,8 +1,7 @@
-import {NgModule,Component,ElementRef,Input,Output,EventEmitter,AfterContentInit,ContentChildren,QueryList,TemplateRef,forwardRef} from '@angular/core';
+import {NgModule,Component,ElementRef,Input,Output,EventEmitter,AfterContentInit,ContentChildren,QueryList,TemplateRef,IterableDiffers,forwardRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {SharedModule,PrimeTemplate} from '../common/shared';
 import {InputTextModule} from '../inputtext/inputtext';
-import {TooltipModule} from '../tooltip/tooltip';
 import {DomHandler} from '../dom/domhandler';
 import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
 
@@ -23,9 +22,8 @@ export const CHIPS_VALUE_ACCESSOR: any = {
                     <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: item}"></ng-container>
                 </li>
                 <li class="ui-chips-input-token">
-                    <input #inputtext type="text" [attr.id]="inputId" [attr.placeholder]="(value && value.length ? null : placeholder)" [attr.tabindex]="tabindex" (keydown)="onKeydown($event,inputtext)"
-                           (focus)="onInputFocus($event)" (blur)="onInputBlur($event,inputtext)" [disabled]="maxedOut||disabled" [disabled]="disabled" [ngStyle]="inputStyle" [class]="inputStyleClass"
-                           [pTooltip]="toolTipMessage" [tooltipPosition]="toolTipPosition" [tooltipEvent]="toolTipEvent" [positionStyle]="positionStyles" [tooltipDisabled]="toolTipDisabled" [tooltipStyleClass]="toolTipStyleClasses" [escape]="toolTipEscape">
+                    <input #inputtext type="text" [attr.id]="inputId" [attr.placeholder]="(value && value.length ? null : placeholder)" [attr.tabindex]="tabindex" (keydown)="onKeydown($event,inputtext)" 
+                        (focus)="onInputFocus($event)" (blur)="onInputBlur($event,inputtext)" [disabled]="maxedOut||disabled" [disabled]="disabled" [ngStyle]="inputStyle" [class]="inputStyleClass">
                 </li>
             </ul>
         </div>
@@ -33,22 +31,6 @@ export const CHIPS_VALUE_ACCESSOR: any = {
     providers: [DomHandler,CHIPS_VALUE_ACCESSOR]
 })
 export class Chips implements AfterContentInit,ControlValueAccessor {
-
-    @Input() toolTipMessage: string;
-
-    @Input() toolTipPosition: string;
-
-    @Input() toolTipEvent: string;
-
-    @Input() positionStyles: string;
-
-    @Input() toolTipDisabled: boolean;
-
-    @Input() toolTipAppendTo: string;
-
-    @Input() toolTipStyleClasses: string;
-
-    @Input() toolTipEscape: boolean;
 
     @Input() style: any;
 
@@ -238,7 +220,7 @@ export class Chips implements AfterContentInit,ControlValueAccessor {
 }
 
 @NgModule({
-    imports: [CommonModule,InputTextModule,SharedModule,TooltipModule],
+    imports: [CommonModule,InputTextModule,SharedModule],
     exports: [Chips,InputTextModule,SharedModule],
     declarations: [Chips]
 })
