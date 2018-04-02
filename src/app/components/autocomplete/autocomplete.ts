@@ -199,31 +199,33 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
     }
 
     handleSuggestionsChange() {
-        if(this.panelEL && this.panelEL.nativeElement && this.loading) {
-            this.highlightOption = null;
-            if(this._suggestions && this._suggestions.length) {
-                this.noResults = false;
-                this.show();
-                this.suggestionsUpdated = true;
-
-                if(this.autoHighlight) {
-                    this.highlightOption = this._suggestions[0];
-                }
-            }
-            else {
-                this.noResults = true;
-
-                if(this.emptyMessage) {
+        if(this._suggestions != null) { //async pipe support
+            if(this.panelEL && this.panelEL.nativeElement && this.loading) {
+                this.highlightOption = null;
+                if(this._suggestions && this._suggestions.length) {
+                    this.noResults = false;
                     this.show();
                     this.suggestionsUpdated = true;
+    
+                    if(this.autoHighlight) {
+                        this.highlightOption = this._suggestions[0];
+                    }
                 }
                 else {
-                    this.hide();
+                    this.noResults = true;
+    
+                    if(this.emptyMessage) {
+                        this.show();
+                        this.suggestionsUpdated = true;
+                    }
+                    else {
+                        this.hide();
+                    }
                 }
             }
+    
+            this.loading = false;
         }
-
-        this.loading = false;
     }
 
     ngAfterContentInit() {
@@ -491,9 +493,10 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
                 case 8:
                     if(this.value && this.value.length && !this.multiInputEL.nativeElement.value) {
                         this.value = [...this.value];
-                        let removedValue = this.value.pop();
-                        this.onUnselect.emit(removedValue);
+                        const removedValue = this.value.pop();
                         this.onModelChange(this.value);
+                        this.updateFilledState();
+                        this.onUnselect.emit(removedValue);
                     }
                 break;
             }
@@ -542,6 +545,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
                     this.inputEL.nativeElement.value = '';
                 }
 
+                this.onClear.emit(event);
                 this.onModelChange(this.value);
             }
         }

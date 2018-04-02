@@ -142,7 +142,7 @@ export class MenubarSub implements OnDestroy {
         if (this.autoDisplay) {
             this.hideTimeout = setTimeout(() => {
                 this.activeItem = null;
-            }, 1000);
+            }, 250);
         }
     }
 

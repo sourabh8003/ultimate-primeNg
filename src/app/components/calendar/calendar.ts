@@ -31,7 +31,7 @@ export interface LocaleSettings {
             <ng-template [ngIf]="!inline">
                 <input #inputfield type="text" [attr.id]="inputId" [attr.name]="name" [attr.required]="required" [value]="inputFieldValue" (focus)="onInputFocus($event)" (keydown)="onInputKeydown($event)" (click)="onInputClick($event)" (blur)="onInputBlur($event)"
                     [readonly]="readonlyInput" (input)="onUserInput($event)" [ngStyle]="inputStyle" [class]="inputStyleClass" [placeholder]="placeholder||''" [disabled]="disabled" [attr.tabindex]="tabindex"
-                    [ngClass]="'ui-inputtext ui-widget ui-state-default ui-corner-all'"
+                    [ngClass]="'ui-inputtext ui-widget ui-state-default ui-corner-all'" autocomplete="off"
                     ><button type="button" [icon]="icon" pButton *ngIf="showIcon" (click)="onButtonClick($event,inputfield)" class="ui-datepicker-trigger ui-calendar-button"
                     [ngClass]="{'ui-state-disabled':disabled}" [disabled]="disabled" tabindex="-1"></button>
             </ng-template>
@@ -248,6 +248,8 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     @Input() panelStyleClass: string;
   
     @Input() keepInvalid: boolean = false;
+
+    @Input() hideOnDateTimeSelect: boolean = false;
     
     @Output() onFocus: EventEmitter<any> = new EventEmitter();
     
@@ -639,7 +641,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
             }
         }
         
-        if(!this.showTime && this.isSingleSelection()) {
+        if(this.isSingleSelection() && (!this.showTime || this.hideOnDateTimeSelect)) {
             this.overlayVisible = false;
         }
 
@@ -775,10 +777,21 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     updateModel(value) {
         this.value = value;
         
-        if(this.dataType == 'date')
+        if(this.dataType == 'date') {
             this.onModelChange(this.value);
-        else if(this.dataType == 'string')
-            this.onModelChange(this.formatDateTime(this.value));
+        }
+        else if(this.dataType == 'string') {
+            if(this.isSingleSelection()) {
+                this.onModelChange(this.formatDateTime(this.value));
+            }
+            else {
+                let stringArrValue = null;
+                if(this.value) {
+                    stringArrValue = this.value.map(date => this.formatDateTime(date));
+                }        
+                this.onModelChange(stringArrValue);        
+            }   
+        }
     }
     
     getFirstDayOfMonthIndex(month: number, year: number) {
@@ -1331,7 +1344,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
         this.createMonth(val.getMonth(), val.getFullYear());
         
         if(this.showTime||this.timeOnly) {
-            let hours = (this.utc) ? val.getUTCHours : val.getHours();
+            let hours = (this.utc) ? val.getUTCHours() : val.getHours();
             
             if(this.hourFormat == '12') {
                 this.pm = hours > 11;

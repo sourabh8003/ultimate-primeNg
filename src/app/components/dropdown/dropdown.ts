@@ -18,7 +18,7 @@ export const DROPDOWN_VALUE_ACCESSOR: any = {
     selector: 'p-dropdown',
     template: `
          <div #container [ngClass]="{'ui-dropdown ui-widget ui-state-default ui-corner-all ui-helper-clearfix':true,
-            'ui-state-disabled':disabled,'ui-dropdown-open':panelVisible,'ui-state-focus':focus, 'ui-dropdown-clearable': showClear && !disabled}"
+            'ui-state-disabled':disabled,'ui-dropdown-open':panelVisible,'ui-state-focus':focused, 'ui-dropdown-clearable': showClear && !disabled}"
             (click)="onMouseclick($event)" [ngStyle]="style" [class]="styleClass">
             <div class="ui-helper-hidden-accessible" *ngIf="autoWidth">
                 <select [required]="required" [attr.name]="name" [attr.aria-label]="selectedOption ? selectedOption.label : ' '" tabindex="-1" aria-hidden="true">
@@ -96,7 +96,7 @@ export const DROPDOWN_VALUE_ACCESSOR: any = {
     ],
     host: {
         '[class.ui-inputwrapper-filled]': 'filled',
-        '[class.ui-inputwrapper-focus]': 'focus'
+        '[class.ui-inputwrapper-focus]': 'focused'
     },
     providers: [DomHandler,ObjectUtils,DROPDOWN_VALUE_ACCESSOR]
 })
@@ -163,6 +163,8 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
     @Output() onFocus: EventEmitter<any> = new EventEmitter();
     
     @Output() onBlur: EventEmitter<any> = new EventEmitter();
+
+    @Output() onClick: EventEmitter<any> = new EventEmitter();
     
     @ViewChild('container') containerViewChild: ElementRef;
     
@@ -198,7 +200,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
     
     hover: boolean;
     
-    focus: boolean;
+    focused: boolean;
 
     filled: boolean;
     
@@ -346,6 +348,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
         }
         
         if(this.selectedOptionUpdated && this.itemsWrapper) {
+            this.updateDimensions();
             let selectedItem = this.domHandler.findSingle(this.panel, 'li.ui-state-highlight');
             if(selectedItem) {
                 this.domHandler.scrollInView(this.itemsWrapper, this.domHandler.findSingle(this.panel, 'li.ui-state-highlight'));
@@ -395,9 +398,9 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
     }
     
     updateDimensions() {
-        if(this.autoWidth) {
+        if(this.autoWidth && this.el.nativeElement && this.el.nativeElement.children[0]) {
             let select = this.domHandler.findSingle(this.el.nativeElement, 'select');
-            if(!this.style||(!this.style['width']&&!this.style['min-width'])) {
+            if(select && !this.style||(this.style && (!this.style['width']&&!this.style['min-width']))) {
                 this.el.nativeElement.children[0].style.width = select.offsetWidth + 30 + 'px';
             }
         }
@@ -407,6 +410,8 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
         if(this.disabled||this.readonly) {
             return;
         }
+
+        this.onClick.emit(event);
         
         this.selfClick = true;
         this.clearClick = this.domHandler.hasClass(event.target, 'ui-dropdown-clear-icon');
@@ -434,7 +439,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
     }
     
     onEditableInputFocus(event) {
-        this.focus = true;
+        this.focused = true;
         this.hide();
     }
     
@@ -487,12 +492,12 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
     }
     
     onInputFocus(event) {
-        this.focus = true;
+        this.focused = true;
         this.onFocus.emit(event);
     }
     
     onInputBlur(event) {
-        this.focus = false;
+        this.focused = false;
         this.onModelTouched();
         this.onBlur.emit(event);
     }
@@ -702,6 +707,10 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
         else
             this.domHandler.findSingle(this.el.nativeElement, 'input[readonly]').focus();
     }
+
+    focus(): void {
+        this.applyFocus();
+    }
     
     bindDocumentClickListener() {
         if(!this.documentClickListener) {
@@ -726,7 +735,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
     }
 
     updateFilledState() {
-        this.filled = (this.value != null);
+        this.filled = (this.selectedOption != null);
     }
 
     clear(event: Event) {
