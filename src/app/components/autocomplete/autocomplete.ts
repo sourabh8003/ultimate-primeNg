@@ -1,7 +1,6 @@
 import {NgModule,Component,ViewChild,ElementRef,AfterViewInit,AfterContentInit,DoCheck,AfterViewChecked,Input,Output,EventEmitter,ContentChildren,QueryList,TemplateRef,Renderer2,forwardRef,ChangeDetectorRef,IterableDiffers} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {InputTextModule} from '../inputtext/inputtext';
-import {TooltipModule} from '../tooltip/tooltip';
 import {ButtonModule} from '../button/button';
 import {SharedModule,PrimeTemplate} from '../common/shared';
 import {DomHandler} from '../dom/domhandler';
@@ -22,8 +21,7 @@ export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
             [ngClass]="'ui-inputtext ui-widget ui-state-default ui-corner-all ui-autocomplete-input'" [value]="inputFieldValue"
             (click)="onInputClick($event)" (input)="onInput($event)" (keydown)="onKeydown($event)" (keyup)="onKeyup($event)" (focus)="onInputFocus($event)" (blur)="onInputBlur($event)" (change)="onInputChange($event)"
             [attr.placeholder]="placeholder" [attr.size]="size" [attr.maxlength]="maxlength" [attr.tabindex]="tabindex" [readonly]="readonly" [disabled]="disabled"
-            ><ul *ngIf="multiple" #multiContainer class="ui-autocomplete-multiple-container ui-widget ui-inputtext ui-state-default ui-corner-all" 
-                 [ngClass]="{'ui-state-disabled':disabled,'ui-state-focus':focus}" (click)="multiIn.focus()" [pTooltip]="toolTipMessage" [tooltipPosition]="toolTipPosition"  [positionStyle]="positionStyles" [tooltipDisabled]="toolTipDisabled" [tooltipStyleClass]="toolTipStyleClasses" [escape]="toolTipEscape">
+            ><ul *ngIf="multiple" #multiContainer class="ui-autocomplete-multiple-container ui-widget ui-inputtext ui-state-default ui-corner-all" [ngClass]="{'ui-state-disabled':disabled,'ui-state-focus':focus}" (click)="multiIn.focus()">
                 <li #token *ngFor="let val of value" class="ui-autocomplete-token ui-state-highlight ui-corner-all">
                     <span class="ui-autocomplete-token-icon fa fa-fw fa-close" (click)="removeItem(token)" *ngIf="!disabled"></span>
                     <span *ngIf="!selectedItemTemplate" class="ui-autocomplete-token-label">{{field ? objectUtils.resolveFieldData(val, field): val}}</span>
@@ -55,23 +53,6 @@ export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
     providers: [DomHandler,ObjectUtils,AUTOCOMPLETE_VALUE_ACCESSOR]
 })
 export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,ControlValueAccessor {
-
-
-    @Input() toolTipMessage: string;
-
-    @Input() toolTipPosition: string;
-
-    @Input() toolTipEvent: string;
-
-    @Input() positionStyles: string;
-
-    @Input() toolTipDisabled: boolean;
-
-    @Input() toolTipAppendTo: string;
-
-    @Input() toolTipStyleClasses: string;
-
-    @Input() toolTipEscape: boolean;
 
     @Input() minLength: number = 1;
 
@@ -502,23 +483,6 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
             if(event.which === 40 && this.suggestions) {
                 this.search(event,event.target.value);
             }
-            // customized
-            else if (event.which === 13 && !this.forceSelection) {
-              if (event.target.value.trim().length) {
-                // this.selectItem({'name': event.target.value, code: event.target.value});
-                this.selectItem(event.target.value);
-                event.preventDefault();
-              } else {
-                event.target.value = '';
-              }
-            } else if (event.which === 9 && !this.forceSelection) {
-              if (event.target.value.trim().length) {
-                // this.selectItem({'name': event.target.value, code: event.target.value});
-                this.selectItem(event.target.value);
-              } else {
-                event.target.value = '';
-              }
-            }
         }
 
         if(this.multiple) {
@@ -672,8 +636,8 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
 }
 
 @NgModule({
-    imports: [CommonModule,InputTextModule,ButtonModule,SharedModule,TooltipModule],
-    exports: [AutoComplete,InputTextModule,SharedModule],
+    imports: [CommonModule,InputTextModule,ButtonModule,SharedModule],
+    exports: [AutoComplete,SharedModule],
     declarations: [AutoComplete]
 })
 export class AutoCompleteModule { }
