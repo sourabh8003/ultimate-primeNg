@@ -16,8 +16,8 @@ export interface MenuItem {
     separator?: boolean;
     badge?: string;
     badgeStyleClass?: string;
-    style?:any;
-    styleClass?:string;
+    style?: any;
+    styleClass?: string;
     title?: string;
     id?: string;
     automationId?: any;
