@@ -121,7 +121,7 @@ export class TreeTable implements AfterContentInit, OnInit {
     @Input() defaultSortOrder: number = 1;
 
     @Input() sortMode: string = 'single';
-    
+
     @Input() resetPageOnSort: boolean = true;
 
     @Input() customSort: boolean;
@@ -135,6 +135,8 @@ export class TreeTable implements AfterContentInit, OnInit {
     @Input() scrollHeight: string;
 
     @Input() frozenWidth: string;
+
+    @Input() frozenValue: any[];
 
     @Input() frozenColumns: any[];
 
@@ -347,7 +349,7 @@ export class TreeTable implements AfterContentInit, OnInit {
                         level: 0,
                         visible: true
                     });
-        
+
                     this.serializeNodes(node, node.children, 1, true);
                 }
             }
@@ -407,7 +409,7 @@ export class TreeTable implements AfterContentInit, OnInit {
             first: this.first,
             rows: this.rows
         });
-        
+
         this.tableService.onUIUpdate(this.value);
     }
 
@@ -437,7 +439,7 @@ export class TreeTable implements AfterContentInit, OnInit {
                 }
                 this.multiSortMeta.push({ field: event.field, order: this.defaultSortOrder });
             }
-            
+
             this.sortMultiple();
         }
     }
@@ -454,12 +456,12 @@ export class TreeTable implements AfterContentInit, OnInit {
             else if (this.value) {
                 this.sortNodes(this.value);
             }
-    
+
             let sortMeta: SortMeta = {
                 field: this.sortField,
                 order: this.sortOrder
             };
-    
+
             this.onSort.emit(sortMeta);
             this.tableService.onSort(sortMeta);
             this.updateSerializedValue();
@@ -469,7 +471,7 @@ export class TreeTable implements AfterContentInit, OnInit {
     sortNodes(nodes) {
         if(!nodes || nodes.length === 0) {
             return;
-        } 
+        }
 
         if(this.customSort) {
             this.sortFunction.emit({
@@ -513,7 +515,7 @@ export class TreeTable implements AfterContentInit, OnInit {
             else if (this.value) {
                this.sortMultipleNodes(this.value);
             }
-            
+
             this.onSort.emit({
                 multisortmeta: this.multiSortMeta
             });
@@ -525,8 +527,8 @@ export class TreeTable implements AfterContentInit, OnInit {
     sortMultipleNodes(nodes) {
         if(!nodes || nodes.length === 0) {
             return;
-        } 
-        
+        }
+
         if(this.customSort) {
             this.sortFunction.emit({
                 data: this.value,
@@ -580,7 +582,7 @@ export class TreeTable implements AfterContentInit, OnInit {
                 }
             }
         }
-       
+
         return null;
     }
 
@@ -615,7 +617,7 @@ export class TreeTable implements AfterContentInit, OnInit {
     isEmpty() {
         return this.value == null || this.value.length == 0;
     }
-    
+
     onColumnResizeBegin(event) {
         let containerLeft = this.domHandler.getOffset(this.containerViewChild.nativeElement).left;
         this.lastResizerHelperX = (event.pageX - containerLeft + this.containerViewChild.nativeElement.scrollLeft);
@@ -710,7 +712,7 @@ export class TreeTable implements AfterContentInit, OnInit {
                 let col = colGroup.children[resizeColumnIndex];
                 let nextCol = col.nextElementSibling;
                 col.style.width = newColumnWidth + 'px';
-    
+
                 if (nextCol && nextColumnWidth) {
                     nextCol.style.width = nextColumnWidth + 'px';
                 }
@@ -887,7 +889,7 @@ export class ScrollableTreeTableView implements AfterViewInit, OnDestroy, AfterV
     _scrollHeight: string;
 
     subscription: Subscription;
-    
+
     initialized: boolean;
 
     constructor(public tt: TreeTable, public el: ElementRef, public domHandler: DomHandler, public zone: NgZone) {
@@ -909,7 +911,7 @@ export class ScrollableTreeTableView implements AfterViewInit, OnDestroy, AfterV
         this._scrollHeight = val;
         this.setScrollHeight();
     }
-    
+
     ngAfterViewChecked() {
         if(!this.initialized && this.el.nativeElement.offsetParent) {
             this.alignScrollBar();
@@ -1010,7 +1012,7 @@ export class ScrollableTreeTableView implements AfterViewInit, OnDestroy, AfterV
                 if(this.frozen) {
                     scrollBodyHeight -= this.domHandler.calculateScrollbarWidth();
                 }
-                
+
                 this.scrollBodyViewChild.nativeElement.style.height = 'auto';
                 this.scrollBodyViewChild.nativeElement.style.maxHeight = scrollBodyHeight + 'px';
                 this.scrollBodyViewChild.nativeElement.style.visibility = 'visible';
@@ -1032,7 +1034,7 @@ export class ScrollableTreeTableView implements AfterViewInit, OnDestroy, AfterV
         if(!this.frozen) {
             let scrollBarWidth = this.hasVerticalOverflow() ? this.domHandler.calculateScrollbarWidth() : 0;
             this.scrollHeaderBoxViewChild.nativeElement.style.marginRight = scrollBarWidth + 'px';
-            
+
             if(this.scrollFooterBoxViewChild && this.scrollFooterBoxViewChild.nativeElement) {
                 this.scrollFooterBoxViewChild.nativeElement.style.marginRight = scrollBarWidth + 'px';
             }
@@ -1068,7 +1070,7 @@ export class SortableColumn implements OnInit, OnDestroy {
     @Input() pSortableColumnDisabled: boolean;
 
     sorted: boolean;
-    
+
     subscription: Subscription;
 
     constructor(public tt: TreeTable, public domHandler: DomHandler) {
@@ -1124,9 +1126,9 @@ export class SortableColumn implements OnInit, OnDestroy {
 export class SortIcon implements OnInit, OnDestroy {
 
     @Input() field: string;
-    
+
     @Input() ariaLabelDesc: string;
-    
+
     @Input() ariaLabelAsc: string;
 
     subscription: Subscription;
@@ -1142,7 +1144,7 @@ export class SortIcon implements OnInit, OnDestroy {
     ngOnInit() {
         this.updateSortState();
     }
-    
+
     onClick(event){
         event.preventDefault();
     }
@@ -1187,7 +1189,7 @@ export class ResizableTreeTableColumn implements AfterViewInit, OnDestroy {
             this.resizer = document.createElement('span');
             this.resizer.className = 'ui-column-resizer ui-clickable';
             this.el.nativeElement.appendChild(this.resizer);
-    
+
             this.zone.runOutsideAngular(() => {
                 this.resizerMouseDownListener = this.onMouseDown.bind(this);
                 this.resizer.addEventListener('mousedown', this.resizerMouseDownListener);
@@ -1239,7 +1241,7 @@ export class ResizableTreeTableColumn implements AfterViewInit, OnDestroy {
         if (this.resizerMouseDownListener) {
             this.resizer.removeEventListener('mousedown', this.resizerMouseDownListener);
         }
-        
+
         this.unbindDocumentEvents();
     }
 }
@@ -1387,7 +1389,7 @@ export class TreeTableToggler {
 
         this.tt.updateSerializedValue();
         this.tt.tableService.onUIUpdate(this.tt.value);
-        
+
         event.preventDefault();
     }
 }
