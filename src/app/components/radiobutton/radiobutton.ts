@@ -14,9 +14,9 @@ export const RADIO_VALUE_ACCESSOR: any = {
         <div [ngStyle]="style" [ngClass]="'ui-radiobutton ui-widget'" [class]="styleClass">
             <div class="ui-helper-hidden-accessible">
                 <input #rb type="radio" [attr.id]="inputId" [attr.name]="name" [attr.value]="value" [attr.tabindex]="tabindex" 
-                    [checked]="checked" (change)="onChange($event)" (focus)="onFocus($event)" (blur)="onBlur($event)">
+                    [checked]="checked" (change)="onChange($event)" (focus)="onFocus($event)" (blur)="onBlur($event)" [disabled]="disabled">
             </div>
-            <div (click)="handleClick()"
+            <div (click)="handleClick($event, rb, true)"
                 [ngClass]="{'ui-radiobutton-box ui-widget ui-state-default':true,
                 'ui-state-active':rb.checked,'ui-state-disabled':disabled,'ui-state-focus':focused}">
                 <span class="ui-radiobutton-icon ui-clickable" [ngClass]="{'fa fa-circle':rb.checked}"></span>
@@ -62,9 +62,17 @@ export class RadioButton implements ControlValueAccessor {
 
     constructor(private cd: ChangeDetectorRef) {}
     
-    handleClick() {
-        if(!this.disabled) {
-            this.select();
+    handleClick(event, radioButton, focus) {
+        event.preventDefault();
+
+        if(this.disabled) {
+            return;
+        }
+
+        this.select();
+
+        if(focus) {
+            radioButton.focus();
         }
     }
     

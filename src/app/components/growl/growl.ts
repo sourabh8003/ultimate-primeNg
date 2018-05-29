@@ -1,9 +1,9 @@
-import {NgModule,Component,ElementRef,AfterViewInit,DoCheck,OnDestroy,Input,Output,ViewChild,EventEmitter,IterableDiffers,Optional} from '@angular/core';
+import {NgModule,Component,ElementRef,AfterViewInit,DoCheck,OnDestroy,Input,Output,ViewChild,EventEmitter,IterableDiffers,Optional,NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Message} from '../common/message';
 import {DomHandler} from '../dom/domhandler';
 import {MessageService} from '../common/messageservice';
-import {Subscription}   from 'rxjs/Subscription';
+import {Subscription}   from 'rxjs';
 
 @Component({
     selector: 'p-growl',
@@ -68,8 +68,8 @@ export class Growl implements AfterViewInit,DoCheck,OnDestroy {
     subscription: Subscription;
     
     closeIconClick: boolean;
-        
-    constructor(public el: ElementRef, public domHandler: DomHandler, public differs: IterableDiffers, @Optional() public messageService: MessageService) {
+
+    constructor(public el: ElementRef, public domHandler: DomHandler, public differs: IterableDiffers, @Optional() public messageService: MessageService, private zone: NgZone) {
         this.differ = differs.find([]).create(null);
         
         if(messageService) {
@@ -147,9 +147,13 @@ export class Growl implements AfterViewInit,DoCheck,OnDestroy {
         if(this.timeout) {
             clearTimeout(this.timeout);
         }
-        this.timeout = setTimeout(() => {
-            this.removeAll();
-        }, this.life);
+        this.zone.runOutsideAngular(() => {
+            this.timeout = setTimeout(() => {
+                this.zone.run(() => {
+                    this.removeAll();
+                });
+            }, this.life);
+        });
     }
         
     remove(index: number, msgel: any) {      

@@ -34,14 +34,14 @@
         <ng-template pTemplate="header" let-columns>
             <tr>
                 <th *ngFor="let col of columns">
-                    &#123;&#123;col.header&#125;&#125;
+                    {{col.header}}
                 </th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-rowData let-columns="columns">
             <tr>
                 <td *ngFor="let col of columns">
-                     &#123;&#123;rowData[col.field]&#125;&#125;
+                     {{rowData[col.field]}}
                 </td>
             </tr>
         </ng-template>
@@ -509,9 +509,9 @@ export class TableRowGroupDemo implements OnInit &#123;
         &lt;tr class="ui-widget-header" *ngIf="rowGroupMetadata[rowData.brand].index === rowIndex"&gt;
             &lt;td colspan="3"&gt;
                 &lt;span style="font-weight:bold"&gt;&#123;&#123;rowData.brand&#125;&#125;&lt;/span&gt;
-            &lt;/td&lt;
-        &lt;/tr&lt;
-        &lt;tr&lt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
             &lt;td&gt;&#123;&#123;rowData.vin&#125;&#125;&lt;/td&gt;
             &lt;td&gt;&#123;&#123;rowData.year&#125;&#125;&lt;/td&gt;
             &lt;td&gt;&#123;&#123;rowData.color&#125;&#125;&lt;/td&gt;
@@ -818,6 +818,9 @@ export class CustomTableSortDemo implements OnInit &#123;
 &lt;/p-table&gt;
 </code>
 </pre>
+
+            <p>For screen reader support of sortable headers, use ariaLabelDesc and ariaLabelAsc properties
+                on p-sortIcon directive.</p>
 
             <p>See the <a [routerLink]="['/table/sort']">live example.</a></p>
 
@@ -1631,11 +1634,12 @@ export class DataTableDemo implements OnInit &#123;
 
             <p>Virtual Scrolling is used with lazy loading to fetch data on demand during scrolling. For smooth scrolling twice the amount of rows property is loaded
                 on a lazy load event. In addition, to avoid performance problems row height is not calculated automatically and should be provided using virtualRowHeight
-                property which defaults to 27px. Note that variable row height is not supported due to the nature of the virtual scrolling behavior.
+                property which defaults to 28px, in your row template also assign the height of the row with the same value for smooth scrolling.
+                Note that variable row height is not supported due to the nature of the virtual scrolling behavior.
             </p>
 <pre>
 <code class="language-markup" pCode ngNonBindable>
-&lt;p-table [columns]="cols" [value]="virtualCars" [scrollable]="true" [rows]="20" scrollHeight="200px"
+&lt;p-table [columns]="cols" [value]="virtualCars" [scrollable]="true" [rows]="20" scrollHeight="200px" [virtualRowHeight]="30"
     [virtualScroll]="true" (onLazyLoad)="loadDataOnScroll($event)" [lazy]="true" [totalRecords]="totalRecords"&gt;
     &lt;ng-template pTemplate="header" let-columns&gt;
         &lt;tr&gt;
@@ -1645,7 +1649,7 @@ export class DataTableDemo implements OnInit &#123;
         &lt;/tr&gt;
     &lt;/ng-template&gt;
     &lt;ng-template pTemplate="body" let-rowData let-columns="columns"&gt;
-        &lt;tr&gt;
+        &lt;tr style="height:30px"&gt;
             &lt;td *ngFor="let col of columns"&gt;
                 &#123;&#123;rowData[col.field]&#125;&#125;
             &lt;/td&gt;
@@ -2144,7 +2148,7 @@ export class DataTableDemo implements OnInit &#123;
                         <tr>
                             <td>virtualRowHeight</td>
                             <td>number</td>
-                            <td>27</td>
+                            <td>28</td>
                             <td>Height of a row to use in calculations of virtual scrolling.</td>
                         </tr>
                         <tr>
@@ -2217,7 +2221,16 @@ export class DataTableDemo implements OnInit &#123;
                             <td>resetPageOnSort</td>
                             <td>boolean</td>
                             <td>true</td>
-                            <td>If true, reset to first page.</td>
+                            <td>When true, resets paginator to first page after sorting.</td>
+                        </tr>
+                        <tr>
+                            <td>exportFunction</td>
+                            <td>function</td>
+                            <td>null</td>
+                            <td>A function to implement custom export. Need to return string value.<br/>
+                                event.data: Field data.<br>
+                                event.field: Column field.
+                            </td>
                         </tr>
                     </tbody>
                 </table>

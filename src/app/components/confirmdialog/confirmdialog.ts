@@ -6,7 +6,7 @@ import {Header,Footer,SharedModule} from '../common/shared';
 import {ButtonModule} from '../button/button';
 import {Confirmation} from '../common/confirmation';
 import {ConfirmationService} from '../common/confirmationservice';
-import {Subscription}   from 'rxjs/Subscription';
+import {Subscription}   from 'rxjs';
 
 @Component({
     selector: 'p-confirmDialog',
@@ -116,7 +116,9 @@ export class ConfirmDialog implements AfterViewInit,AfterViewChecked,OnDestroy {
                 this.header = this.confirmation.header||this.header;
                 this.rejectVisible = this.confirmation.rejectVisible == null ? this.rejectVisible : this.confirmation.rejectVisible;
                 this.acceptVisible = this.confirmation.acceptVisible == null ? this.acceptVisible : this.confirmation.acceptVisible;
-                
+                this.acceptLabel = this.confirmation.acceptLabel||this.acceptLabel;
+                this.rejectLabel = this.confirmation.rejectLabel||this.rejectLabel;
+
                 if(this.confirmation.accept) {
                     this.confirmation.acceptEvent = new EventEmitter();
                     this.confirmation.acceptEvent.subscribe(this.confirmation.accept);

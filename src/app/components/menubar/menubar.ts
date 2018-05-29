@@ -1,4 +1,4 @@
-import { NgModule, Component, ElementRef, Input, Renderer2, OnDestroy } from '@angular/core';
+import { NgModule, Component, ElementRef, Input, Renderer2, OnDestroy,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomHandler } from '../dom/domhandler';
 import { MenuItem } from '../common/menuitem';
@@ -61,7 +61,7 @@ export class MenubarSub implements OnDestroy {
 
     activeMenu: any;
 
-    constructor(public domHandler: DomHandler, public renderer: Renderer2) { }
+    constructor(public domHandler: DomHandler, public renderer: Renderer2, private cd: ChangeDetectorRef) { }
 
     onItemMenuClick(event: Event, item: HTMLLIElement, menuitem: MenuItem) {
         if (!this.autoDisplay) {
@@ -118,7 +118,7 @@ export class MenubarSub implements OnDestroy {
                 this.hideTimeout = null;
             }
 
-            this.activeItem = item;
+            this.activeItem = this.activeItem ? (this.activeItem.isEqualNode(item)? null: item) : item;
             let nextElement = <HTMLLIElement>item.children[0].nextElementSibling;
             if (nextElement) {
                 let sublist = <HTMLUListElement>nextElement.children[0];
@@ -142,6 +142,7 @@ export class MenubarSub implements OnDestroy {
         if (this.autoDisplay) {
             this.hideTimeout = setTimeout(() => {
                 this.activeItem = null;
+                this.cd.markForCheck();
             }, 250);
         }
     }
