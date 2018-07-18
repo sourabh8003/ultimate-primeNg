@@ -25,7 +25,7 @@ let idx: number = 0;
                     <span class="ui-tabview-title">{{tab.header}}</span>
                     <span class="ui-tabview-right-icon fa" [ngClass]="tab.rightIcon" *ngIf="tab.rightIcon"></span>
                 </a>
-                <span *ngIf="tab.closable" class="ui-tabview-close fa fa-close" (click)="clickClose($event,tab)"></span>
+                <span *ngIf="tab.closable" class="ui-tabview-close pi pi-times" (click)="clickClose($event,tab)"></span>
             </li>
         </ng-template>
     `,
@@ -175,21 +175,10 @@ export class TabView implements AfterContentInit,BlockableUI {
     
     _activeIndex: number;
     
-    _lazy: boolean;
-
     preventActiveIndexPropagation: boolean;
 
     constructor(public el: ElementRef) {}
-    
-    @Input() get lazy(): boolean {
-        return this._lazy;
-    }
-
-    set lazy(val: boolean) {
-        this._lazy = val;
-        console.log('Lazy property of TabView is deprecated, use an ngTemplate inside a TabPanel instead for Lazy Loading');
-    }
-    
+      
     ngAfterContentInit() {
         this.initTabs();
         

@@ -20,11 +20,11 @@ export const SPINNER_VALUE_ACCESSOR: any = {
             [ngStyle]="inputStyle" [class]="inputStyleClass" [ngClass]="'ui-spinner-input ui-inputtext ui-widget ui-state-default ui-corner-all'">
             <button type="button" [ngClass]="{'ui-spinner-button ui-spinner-up ui-corner-tr ui-button ui-widget ui-state-default':true,'ui-state-disabled':disabled}" [disabled]="disabled" [attr.readonly]="readonly"
                 (mouseleave)="onUpButtonMouseleave($event)" (mousedown)="onUpButtonMousedown($event)" (mouseup)="onUpButtonMouseup($event)">
-                <span class="ui-spinner-button-icon fa fa-caret-up ui-clickable"></span>
+                <span class="ui-spinner-button-icon pi pi-caret-up ui-clickable"></span>
             </button>
             <button type="button" [ngClass]="{'ui-spinner-button ui-spinner-down ui-corner-br ui-button ui-widget ui-state-default':true,'ui-state-disabled':disabled}" [disabled]="disabled" [attr.readonly]="readonly"
                 (mouseleave)="onDownButtonMouseleave($event)" (mousedown)="onDownButtonMousedown($event)" (mouseup)="onDownButtonMouseup($event)">
-                <span class="ui-spinner-button-icon fa fa-caret-down ui-clickable"></span>
+                <span class="ui-spinner-button-icon pi pi-caret-down ui-clickable"></span>
             </button>
         </span>
     `,
@@ -97,6 +97,8 @@ export class Spinner implements OnInit,ControlValueAccessor {
     public filled: boolean;
     
     public negativeSeparator = '-';
+
+    decimalSeparatorRegEx: RegExp;
     
     @ViewChild('inputfield') inputfieldViewChild: ElementRef;
     
@@ -212,14 +214,26 @@ export class Spinner implements OnInit,ControlValueAccessor {
     }
 
     onInputKeyup(event: KeyboardEvent) {
-        let inputValue = (<HTMLInputElement> event.target).value;
-        if (event.key !== this.decimalSeparator && event.key !== this.thousandSeparator && event.key !== this.negativeSeparator) {
-            this.value = this.parseValue(inputValue);
+        this.decimalSeparatorRegEx = this.decimalSeparatorRegEx||new RegExp(this.decimalSeparator === '.' ? '\\.' : this.decimalSeparator, "g");
+        const inputValue = (<HTMLInputElement> event.target).value.trim();
+        this.value = this.parseValue(inputValue);
+        if(this.shouldFormat(inputValue)) {
             this.formatValue();
         }
-    
         this.onModelChange(this.value);
         this.updateFilledState();
+    }
+
+    shouldFormat(value): boolean {
+        if(this.negativeSeparator === value) {
+            return false;
+        }
+
+        if(!this.domHandler.isInteger(this.step) && (value.match(this.decimalSeparatorRegEx)||[]).length === 1 && value.indexOf(this.decimalSeparator) === value.length - 1) {
+            return false;
+        }
+
+        return true;
     }
     
     onInputBlur(event) {
