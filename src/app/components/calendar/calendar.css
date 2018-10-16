@@ -12,10 +12,6 @@
     border-left: 0 none;
 }
 
-.ui-calendar .ui-calendar-button .ui-button-icon-left {
-    font-size: 1.25em;
-}
-
 .ui-calendar .ui-calendar-button:enabled:hover,
 .ui-calendar .ui-calendar-button:focus {
     border-left: 0 none;
@@ -46,9 +42,9 @@
 .ui-datepicker {
 	width: auto;
 	padding: .2em;
-	display: none;
     position: absolute;
 }
+
 .ui-datepicker.ui-datepicker-inline {
     display: inline-block;
     position: static;
@@ -100,12 +96,6 @@
     vertical-align: middle;
 }
 .ui-datepicker select.ui-datepicker-month {
-    width: 55%;
-}
-.ui-datepicker select.ui-datepicker-year {
-	width: 35%;
-}
-.ui-datepicker select.ui-datepicker-month {
     margin-right: .25em;
 }
 .ui-datepicker span.ui-datepicker-year {
@@ -138,12 +128,13 @@
 	border: 0;
 	padding: 0;
 }
-.ui-datepicker td span,
-.ui-datepicker td a {
+.ui-datepicker td > span,
+.ui-datepicker td > a {
 	display: block;
 	padding: .5em;
-	text-align: right;
-	text-decoration: none;
+    text-decoration: none;
+    border: 0 none;
+    text-align: center;
 }
 
 .ui-datepicker .ui-datepicker-buttonbar {
@@ -173,11 +164,15 @@
 }
 
 /* Month Picker */
-.ui-datepicker-monthpicker .ui-datepicker-month-cell {
+.ui-monthpicker .ui-monthpicker-month {
     width: 33.3%;
     display: inline-block;
     text-align: center;
     padding: .5em;
+}
+
+.ui-datepicker-monthpicker select.ui-datepicker-year {
+    width: auto;
 }
 
 /* Time Picker */
@@ -232,7 +227,6 @@ input[type=text]::-ms-clear {
     top: 50%;
     left: 50%;
     min-width: 80vw;
-    transform: translate(-50%, -50%);
 }
 
 .ui-datepicker-touch-ui.ui-datepicker th {
@@ -241,8 +235,8 @@ input[type=text]::-ms-clear {
 .ui-datepicker-touch-ui.ui-datepicker td {
 	padding: 0;
 }
-.ui-datepicker-touch-ui.ui-datepicker td span,
-.ui-datepicker-touch-ui.ui-datepicker td a {
+.ui-datepicker-touch-ui.ui-datepicker td > span,
+.ui-datepicker-touch-ui.ui-datepicker td > a {
 	padding: 2em 0;
 }
 

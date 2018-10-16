@@ -22,7 +22,7 @@ export const LISTBOX_VALUE_ACCESSOR: any = {
       <div class="ui-widget-header ui-corner-all ui-listbox-header ui-helper-clearfix" *ngIf="headerFacet">
         <ng-content select="p-header"></ng-content>
       </div>
-      <div class="ui-widget-header ui-corner-all ui-listbox-header ui-helper-clearfix" *ngIf="(checkbox && multiple) || filter" [ngClass]="{'ui-listbox-header-w-checkbox': checkbox}">
+      <div class="ui-widget-header ui-corner-all ui-listbox-header ui-helper-clearfix" *ngIf="(checkbox && multiple && showToggleAll) || filter" [ngClass]="{'ui-listbox-header-w-checkbox': checkbox}">
         <div class="ui-chkbox ui-widget" *ngIf="checkbox && multiple && showToggleAll">
           <div class="ui-helper-hidden-accessible">
             <input #cb type="checkbox" readonly="readonly" [checked]="allChecked">
@@ -32,15 +32,15 @@ export const LISTBOX_VALUE_ACCESSOR: any = {
           </div>
         </div>
         <div class="ui-listbox-filter-container" *ngIf="filter">
-          <input type="text" role="textbox" (input)="onFilter($event)" class="ui-inputtext ui-widget ui-state-default ui-corner-all" [disabled]="disabled">
+          <input type="text" role="textbox" [value]="filterValue||''" (input)="onFilter($event)" class="ui-inputtext ui-widget ui-state-default ui-corner-all" [disabled]="disabled">
           <span class="ui-listbox-filter-icon pi pi-search"></span>
         </div>
       </div>
       <div class="ui-listbox-list-wrapper" [ngStyle]="listStyle">
         <ul class="ui-listbox-list">
           <li *ngFor="let option of options; let i = index;" [style.display]="isItemVisible(option) ? 'block' : 'none'"
-              [ngClass]="{'ui-listbox-item ui-corner-all':true,'ui-state-highlight':isSelected(option)}"
-              (click)="onOptionClick($event,option)" (dblclick)="onDoubleClick($event,option)" (touchend)="onOptionTouchEnd($event,option)">
+              [ngClass]="{'ui-listbox-item ui-corner-all':true,'ui-state-highlight':isSelected(option), 'ui-state-disabled': option.disabled}"
+              (click)="onOptionClick($event,option)" (dblclick)="onOptionDoubleClick($event,option)" (touchend)="onOptionTouchEnd($event,option)">
             <div class="ui-chkbox ui-widget" *ngIf="checkbox && multiple">
               <div class="ui-helper-hidden-accessible">
                 <input type="checkbox" [checked]="isSelected(option)" [disabled]="disabled">
@@ -101,7 +101,7 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
 
     public itemTemplate: TemplateRef<any>;
 
-    public filterValue: string;
+    public _filterValue: string;
 
     public filtered: boolean;
 
@@ -126,6 +126,14 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
     set options(val: any[]) {
         let opts = this.optionLabel ? this.objectUtils.generateSelectItems(val, this.optionLabel) : val;
         this._options = opts;
+    }
+    
+    @Input() get filterValue(): string {
+        return this._filterValue;
+    }
+    
+    set filterValue(val: string) {
+        this._filterValue = val;
     }
 
     ngAfterContentInit() {
@@ -160,7 +168,7 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
     }
 
     onOptionClick(event, option) {
-        if (this.disabled || this.readonly) {
+        if (this.disabled || option.disabled || this.readonly) {
             return;
         }
 
@@ -178,11 +186,22 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
     }
 
     onOptionTouchEnd(event, option) {
-        if (this.disabled || this.readonly) {
+        if (this.disabled || option.disabled || this.readonly) {
             return;
         }
 
         this.optionTouched = true;
+    }
+
+    onOptionDoubleClick(event: Event, option: SelectItem): any {
+        if (this.disabled || option.disabled || this.readonly) {
+            return;
+        }
+
+        this.onDblClick.emit({
+            originalEvent: event,
+            value: this.value
+        })
     }
 
     onOptionClickSingle(event, option) {
@@ -311,7 +330,23 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
         if (this.filterValue)
             return this.allFilteredSelected();
         else
-            return this.value && this.options && (this.value.length === this.options.length);
+            return this.value && this.options && (this.value.length > 0 && this.value.length === this.getEnabledOptionCount());
+    }
+
+    getEnabledOptionCount(): number {
+        if (this.options) {
+            let count = 0;
+            for (let opt of this.options) {
+                if (!opt.disabled) {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+        else {
+            return 0;
+        }
     }
 
     allFilteredSelected(): boolean {
@@ -333,7 +368,7 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
 
     onFilter(event) {
         let query = event.target.value.trim().toLowerCase();
-        this.filterValue = query.length ? query : null;
+        this._filterValue = query.length ? query : null;
     }
 
     toggleAll(event, checkbox) {
@@ -349,7 +384,7 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
                 this.value = [];
                 for (let i = 0; i < this.options.length; i++) {
                     let opt = this.options[i];
-                    if (this.isItemVisible(opt)) {
+                    if (this.isItemVisible(opt) && !opt.disabled) {
                         this.value.push(opt.value);
                     }
                 }
@@ -382,17 +417,6 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
         else {
             return true;
         }
-    }
-
-    onDoubleClick(event: Event, option: SelectItem): any {
-        if (this.disabled || this.readonly) {
-            return;
-        }
-
-        this.onDblClick.emit({
-            originalEvent: event,
-            value: this.value
-        })
     }
 
     onInputFocus(event) {

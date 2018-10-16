@@ -1,6 +1,7 @@
 import {NgModule,Component,ElementRef,OnDestroy,Input,Output,EventEmitter,HostListener,AfterContentInit,
         ContentChildren,ContentChild,QueryList,TemplateRef,EmbeddedViewRef,ViewContainerRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {TooltipModule} from '../tooltip/tooltip';
 import {SharedModule,PrimeTemplate} from '../common/shared';
 import {BlockableUI} from '../common/blockableui';
 
@@ -19,11 +20,16 @@ let idx: number = 0;
         <ng-template ngFor let-tab [ngForOf]="tabs">
             <li [class]="getDefaultHeaderClass(tab)" [ngStyle]="tab.headerStyle" role="presentation"
                 [ngClass]="{'ui-tabview-selected ui-state-active': tab.selected, 'ui-state-disabled': tab.disabled}"
-                (click)="clickTab($event,tab)" *ngIf="!tab.closed">
-                <a [attr.id]="tab.id + '-label'" href="#" role="tab" [attr.aria-selected]="tab.selected" [attr.aria-controls]="tab.id">
-                    <span class="ui-tabview-left-icon fa" [ngClass]="tab.leftIcon" *ngIf="tab.leftIcon"></span>
-                    <span class="ui-tabview-title">{{tab.header}}</span>
-                    <span class="ui-tabview-right-icon fa" [ngClass]="tab.rightIcon" *ngIf="tab.rightIcon"></span>
+                (click)="clickTab($event,tab)" *ngIf="!tab.closed" tabindex="0" (keydown.enter)="clickTab($event,tab)">
+                <a [attr.id]="tab.id + '-label'" role="tab" [attr.aria-selected]="tab.selected" [attr.aria-controls]="tab.id" [pTooltip]="tab.tooltip" [tooltipPosition]="orientation">
+                    <ng-container *ngIf="!tab.headerTemplate" >
+                        <span class="ui-tabview-left-icon" [ngClass]="tab.leftIcon" *ngIf="tab.leftIcon"></span>
+                        <span class="ui-tabview-title">{{tab.header}}</span>
+                        <span class="ui-tabview-right-icon" [ngClass]="tab.rightIcon" *ngIf="tab.rightIcon"></span>
+                    </ng-container>
+                    <ng-container *ngIf="tab.headerTemplate">
+                        <ng-container *ngTemplateOutlet="tab.headerTemplate"></ng-container>
+                    </ng-container>
                 </a>
                 <span *ngIf="tab.closable" class="ui-tabview-close pi pi-times" (click)="clickClose($event,tab)"></span>
             </li>
@@ -92,6 +98,8 @@ export class TabPanel implements AfterContentInit,OnDestroy {
     @Input() rightIcon: string;
     
     @Input() cache: boolean = true;
+
+    @Input() tooltip: any;
     
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
     
@@ -108,10 +116,16 @@ export class TabPanel implements AfterContentInit,OnDestroy {
     id: string = `ui-tabpanel-${idx++}`;
     
     contentTemplate: TemplateRef<any>;
+
+    headerTemplate: TemplateRef<any>;
     
     ngAfterContentInit() {
         this.templates.forEach((item) => {
             switch(item.getType()) {
+                case 'header':
+                    this.headerTemplate = item.template;
+                break;
+
                 case 'content':
                     this.contentTemplate = item.template;
                 break;
@@ -307,7 +321,7 @@ export class TabView implements AfterContentInit,BlockableUI {
 
 
 @NgModule({
-    imports: [CommonModule,SharedModule],
+    imports: [CommonModule,SharedModule,TooltipModule],
     exports: [TabView,TabPanel,TabViewNav,SharedModule],
     declarations: [TabView,TabPanel,TabViewNav]
 })

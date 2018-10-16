@@ -37,6 +37,7 @@ import { HomeComponent } from './components/home/home.component';
             {path: 'editor', loadChildren: './components/editor/editordemo.module#EditorDemoModule'},
             {path: 'fieldset', loadChildren: './components/fieldset/fieldsetdemo.module#FieldsetDemoModule'},
             {path: 'fileupload', loadChildren: './components/fileupload/fileuploaddemo.module#FileUploadDemoModule'},
+            {path: 'flexgrid', loadChildren: './components/flexgrid/flexgriddemo.module#FlexGridDemoModule'},
             {path: 'galleria', loadChildren: './components/galleria/galleriademo.module#GalleriaDemoModule'},
             {path: 'gmap', loadChildren: './components/gmap/gmapdemo.module#GMapDemoModule'},
             {path: 'grid', loadChildren: './components/grid/griddemo.module#GridDemoModule'},
@@ -85,6 +86,7 @@ import { HomeComponent } from './components/home/home.component';
             {path: 'tabview', loadChildren: './components/tabview/tabviewdemo.module#TabViewDemoModule'},
             {path: 'terminal', loadChildren: './components/terminal/terminaldemo.module#TerminalDemoModule'},
             {path: 'tieredmenu', loadChildren: './components/tieredmenu/tieredmenudemo.module#TieredMenuDemoModule'},
+            {path: 'toast', loadChildren: './components/toast/toastdemo.module#ToastDemoModule'},
             {path: 'togglebutton', loadChildren: './components/togglebutton/togglebuttondemo.module#ToggleButtonDemoModule'},
             {path: 'toolbar', loadChildren: './components/toolbar/toolbardemo.module#ToolbarDemoModule'},
             {path: 'tooltip', loadChildren: './components/tooltip/tooltipdemo.module#TooltipDemoModule'},
@@ -94,6 +96,6 @@ import { HomeComponent } from './components/home/home.component';
             {path: 'validation', loadChildren: './components/validation/validationdemo.module#ValidationDemoModule'}
         ])    
     ],
-    exports: [RouterModule]
+    exports: [RouterModule]
 })
 export class AppRoutingModule {}

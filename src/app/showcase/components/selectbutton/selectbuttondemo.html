@@ -100,7 +100,7 @@ export class MyModel &#123;
                 In multiple case, model property should be an array instance that is not null or undefined.</p>
 <pre>
 <code class="language-markup" pCode ngNonBindable>
-&lt;p-selectButton [options]="cities" [(ngModel)]="selectedCities"&gt;&lt;/p-selectButton&gt;
+&lt;p-selectButton [options]="cities" [(ngModel)]="selectedCities" multiple="multiple" &gt;&lt;/p-selectButton&gt;
 </code>
 </pre>
 
@@ -139,7 +139,7 @@ export class MyModel &#123;
             <p>Button options can display icons using the icon property of the SelectItem API.</p>
 <pre>
 <code class="language-markup" pCode ngNonBindable>
-&lt;p-selectButton [options]="selectedType" [(ngModel)]="types"&gt;&lt;/p-selectButton&gt;
+&lt;p-selectButton [options]="types" [(ngModel)]="selectedType"&gt;&lt;/p-selectButton&gt;
 </code>
 </pre>
 
@@ -160,6 +160,9 @@ export class SelectButtonDemo &#123;
 &#125;
 </code>
 </pre>
+
+            <h3>Disabled Options</h3>
+            <p>Particular options can be prevented from selection using the disabled property of SelectItem API.</p>
 
             <h3>Templating</h3>
             <p>Items support templating to display custom content inside the buttons using an ng-template that receives the option as the implicit variable.</p>

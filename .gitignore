@@ -7,6 +7,7 @@
 /components
 /resources
 /aot
+/build
 
 # dependencies
 /node_modules
@@ -43,6 +44,8 @@ testem.log
 /src/app/components/**/*.ngfactory.ts
 /src/app/components/**/*.ngsummary.json
 
+!/src/assets/components/themes/nova-*/theme.css
+!/src/assets/components/themes/luna-*/theme.css
 
 # e2e
 /e2e/*.js

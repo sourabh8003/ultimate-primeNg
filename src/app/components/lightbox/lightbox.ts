@@ -1,4 +1,4 @@
-import {NgModule,Component,ElementRef,Input,Output,Renderer2,AfterViewInit,OnDestroy} from '@angular/core';
+import {NgModule,Component,ElementRef,Input,Output,Renderer2,AfterViewInit,OnDestroy, ChangeDetectorRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomHandler} from '../dom/domhandler';
 
@@ -50,6 +50,10 @@ export class Lightbox implements AfterViewInit,OnDestroy {
     @Input() easing: 'ease-out';
     
     @Input() effectDuration: any = '500ms';
+
+    @Input() autoZIndex: boolean = true;
+    
+    @Input() baseZIndex: number = 0;
                 
     public visible: boolean;
     
@@ -71,7 +75,7 @@ export class Lightbox implements AfterViewInit,OnDestroy {
     
     public documentClickListener: any;
 
-    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2) {}
+    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2,private cd: ChangeDetectorRef) {}
                 
     onImageClick(event,image,i,content) {
         this.index = i;
@@ -80,7 +84,6 @@ export class Lightbox implements AfterViewInit,OnDestroy {
         content.style.height = 32 + 'px';
         this.show();
         this.displayImage(image);
-        
         this.preventDocumentClickListener = true;
         event.preventDefault();
     }
@@ -100,6 +103,7 @@ export class Lightbox implements AfterViewInit,OnDestroy {
                 this.hide(event);
             }
             this.preventDocumentClickListener = false;
+            this.cd.markForCheck();
         });
     }
     
@@ -111,6 +115,7 @@ export class Lightbox implements AfterViewInit,OnDestroy {
     
     displayImage(image) {
         setTimeout(() => {
+            this.cd.markForCheck();
             this.currentImage = image;
             this.captionText = image.title;
             this.center();
@@ -119,11 +124,13 @@ export class Lightbox implements AfterViewInit,OnDestroy {
     
     show() {
         this.mask = document.createElement('div');
-        this.mask.style.zIndex = ++DomHandler.zindex;
+        
         this.domHandler.addMultipleClasses(this.mask, 'ui-widget-overlay ui-dialog-mask');
         document.body.appendChild(this.mask);
-        
-        this.zindex = ++DomHandler.zindex;
+        if (this.autoZIndex) {
+            this.zindex = this.baseZIndex + (++DomHandler.zindex);
+        }
+        this.mask.style.zIndex = this.zindex - 1;
         this.center();
         this.visible = true;
     }
@@ -178,6 +185,7 @@ export class Lightbox implements AfterViewInit,OnDestroy {
         this.panel.style.top = parseInt(this.panel.style.top) + (this.domHandler.getOuterHeight(this.panel) - imageHeight) / 2 + 'px';
 
         setTimeout(() => {
+            this.cd.markForCheck();
             this.domHandler.fadeIn(image, 500);
             image.style.display = 'block';
             //this.captionText = this.currentImage.title;

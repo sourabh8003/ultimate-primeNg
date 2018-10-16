@@ -83,12 +83,12 @@ import &#123; Car &#125; from '../domain/car';
 @Injectable()
 export class CarService &#123;
 
-    constructor(private http: Http) &#123;&#125;
+    constructor(private http: HttpClient) &#123;&#125;
 
     getCarsSmall() &#123;
         return this.http.get('/showcase/resources/data/cars-small.json')
                     .toPromise()
-                    .then(res => &lt;Car[]&gt; res.json().data)
+                    .then(res => &lt;Car[]&gt; res.data)
                     .then(data => &#123; return data; &#125;);
     &#125;
 &#125;
@@ -647,7 +647,7 @@ export class DataTablePageDemo implements OnInit &#123;
 &lt;/ng-template&gt;
 &lt;ng-template pTemplate="paginatorright"&gt;
     &lt;button type="button" pButton icon="fa-cloud-upload"&gt;&lt;/button&gt;
-    &lt;/ng-template&gt;
+&lt;/ng-template&gt;
 &lt;/p-table&gt;
 </code>
 </pre>
@@ -1097,6 +1097,24 @@ export class DataTableDemo implements OnInit &#123;
         &lt;/tr&gt;
     &lt;/ng-template&gt;
 &lt;/p-table&gt;
+</code>
+</pre>
+
+            <p>Both p-tableCheckbox and p-tableRadioButton components can be disabled using their property with the same name to prevent selection of a particular row. In addition, index of the row
+                needs to be provided to the checkbox/radiobutton components so that they can be available at the onRowSelect or onRowUnselect events of the Table.
+            </p>
+<pre>
+<code class="language-markup" pCode ngNonBindable>
+&lt;ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex" let-columns="columns"&gt;
+    &lt;tr [pSelectableRow]="rowData"&gt;
+        &lt;td&gt;
+            &lt;p-tableCheckbox [value]="rowData" [disabled]="rowData.year > 2010" [index]="rowIndex"&gt;&lt;/p-tableCheckbox&gt;
+        &lt;/td&gt;
+        &lt;td *ngFor="let col of columns"&gt;
+            &#123;&#123;rowData[col.field]&#125;&#125;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/ng-template&gt;
 </code>
 </pre>
 
@@ -2119,6 +2137,12 @@ export class DataTableDemo implements OnInit &#123;
                             <td>boolean</td>
                             <td>false</td>
                             <td>Defines if data is loaded and interacted with in lazy manner.</td>
+                        </tr>
+                        <tr>
+                            <td>lazyLoadOnInit</td>
+                            <td>boolean</td>
+                            <td>true</td>
+                            <td>Whether to call lazy loading on initialization.</td>
                         </tr>
                         <tr>
                             <td>compareSelectionBy</td>

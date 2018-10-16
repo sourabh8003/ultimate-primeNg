@@ -83,16 +83,14 @@ export class Schedule implements DoCheck,OnDestroy,OnInit,OnChanges,AfterViewChe
 
     @Input() timezone: boolean | string = false;
     
-    @Input() timeFormat:string | null = null;
+    @Input() timeFormat: string | null = null;
 
     @Input() eventRender: Function;
     
     @Input() dayRender: Function;
     
     @Input() navLinks: boolean;
-    
-    @Input() options: any;
-    
+        
     @Output() onDayClick: EventEmitter<any> = new EventEmitter();
     
     @Output() onDrop: EventEmitter<any> = new EventEmitter();
@@ -132,6 +130,8 @@ export class Schedule implements DoCheck,OnDestroy,OnInit,OnChanges,AfterViewChe
     calendar: any;
     
     config: any;
+
+    _options: any;
 
     constructor(public el: ElementRef, differs: IterableDiffers) {
         this.differ = differs.find([]).create(null);
@@ -291,8 +291,8 @@ export class Schedule implements DoCheck,OnDestroy,OnInit,OnChanges,AfterViewChe
             }
         };
                 
-        if(this.options) {
-            for(let prop in this.options) {
+        if (this.options) {
+            for (let prop in this.options) {
                 this.config[prop] = this.options[prop];
             }
         }
@@ -305,11 +305,27 @@ export class Schedule implements DoCheck,OnDestroy,OnInit,OnChanges,AfterViewChe
     }
     
     ngOnChanges(changes: SimpleChanges) {
-        if(this.calendar) {
-            for(let propName in changes) {
-                if(propName !== 'events') {
+        if (this.calendar) {
+            for (let propName in changes) {
+                if (propName !== 'options' && propName !== 'events') {
                     this.calendar.option(propName, changes[propName].currentValue);
-                }
+                }                
+            }
+        }
+    }
+
+    @Input() get options(): any {
+        return this._options;
+    }
+
+    set options(value: any) {
+        this._options = value;
+
+        if (this._options && this.calendar) {
+            for (let prop in this._options) {
+                let optionValue = this._options[prop];
+                this.config[prop] = optionValue;
+                this.calendar.option(prop, optionValue);
             }
         }
     }
@@ -318,15 +334,18 @@ export class Schedule implements DoCheck,OnDestroy,OnInit,OnChanges,AfterViewChe
         this.calendar = new FullCalendar.Calendar(this.el.nativeElement.children[0], this.config);
         this.calendar.render();
         this.initialized = true;
+        if (this.events) {
+            this.calendar.addEventSource(this.events);
+        }
     }
      
     ngDoCheck() {
         let changes = this.differ.diff(this.events);
         
-        if(this.calendar && changes) {
+        if (this.calendar && changes) {
             this.calendar.removeEventSources();
             
-            if(this.events) {
+            if (this.events) {
                 this.calendar.addEventSource(this.events);
             }
         }
@@ -369,7 +388,7 @@ export class Schedule implements DoCheck,OnDestroy,OnInit,OnChanges,AfterViewChe
     }
      
     changeView(viewName: string, dateOrRange: any) {
-        this.calendar.incrementDate(viewName, dateOrRange);
+        this.calendar.changeView(viewName, dateOrRange);
     }
     
     getDate() {

@@ -93,6 +93,9 @@ export class MyModel &#123;
 </code>
 </pre>
 
+            <h3>Disabled Options</h3>
+            <p>Particular options can be prevented from selection using the disabled property of SelectItem API.</p>
+
             <h3>Templating</h3>
             <p>Label of a selectitem is displayed by default next to the checkbox in the overlay panel and it is possible to customize
             the content using templating. The ngTemplate receives the selectitem as the implicit variable along with the index of the option.</p>
@@ -127,6 +130,15 @@ export class MyModel &#123;
         //Footer contentr
     &lt;/p-footer&gt;
 &lt;/p-multiSelect&gt;
+</code>
+</pre>
+
+            <h3>Animation Configuration</h3>
+            <p>Transition of the open and hide animations can be customized using the showTransitionOptions and hideTransitionOptions properties, 
+                example below disables the animations altogether.</p> 
+<pre>
+<code class="language-markup" pCode ngNonBindable>
+&lt;p-multiSelect [options]="cities" formControlName="selectedCities" [showTransitionOptions]="'0ms'" [hideTransitionOptions]="'0ms'"&gt;&lt;/p-multiSelect&gt;
 </code>
 </pre>
 
@@ -290,7 +302,31 @@ export class MyModel &#123;
                             <td>selectionLimit</td>
                             <td>number</td>
                             <td>null</td>
-                            <td>Decides how many you can select options.</td>
+                            <td>Number of maximum options that can be selected.</td>
+                        </tr>
+                        <tr>
+                            <td>baseZIndex</td>
+                            <td>number</td>
+                            <td>0</td>
+                            <td>Base zIndex value to use in layering.</td>
+                        </tr>
+                        <tr>
+                            <td>autoZIndex</td>
+                            <td>boolean</td>
+                            <td>true</td>
+                            <td>Whether to automatically manage layering.</td>
+                        </tr>
+                        <tr>
+                            <td>showTransitionOptions</td>
+                            <td>string</td>
+                            <td>225ms ease-out</td>
+                            <td>Transition options of the show animation.</td>
+                        </tr>
+                        <tr>
+                            <td>hideTransitionOptions</td>
+                            <td>string</td>
+                            <td>195ms ease-in</td>
+                            <td>Transition options of the hide animation.</td>
                         </tr>
                     </tbody>
                 </table>

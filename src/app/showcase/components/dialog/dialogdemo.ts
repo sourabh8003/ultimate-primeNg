@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
     templateUrl: './dialogdemo.html'
@@ -13,6 +13,10 @@ export class DialogDemo {
 
     hideDialog() {
         this.display = false;
+    }
+
+    public hide(): void {
+        console.log('Hello world');
     }
 
 }

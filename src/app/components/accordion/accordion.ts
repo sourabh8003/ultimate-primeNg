@@ -12,7 +12,8 @@ let idx: number = 0;
     selector: 'p-accordionTab',
     template: `
         <div class="ui-accordion-header ui-state-default ui-corner-all" [ngClass]="{'ui-state-active': selected,'ui-state-disabled':disabled}">
-            <a href="#" [attr.id]="id" [attr.aria-controls]="id + '-content'" role="tab" [attr.aria-expanded]="selected" (click)="toggle($event)" (keydown.space)="toggle($event)">
+            <a tabindex="0" [attr.id]="id" [attr.aria-controls]="id + '-content'" role="tab" [attr.aria-expanded]="selected" (click)="toggle($event)" 
+                (keydown.space)="toggle($event)" (keydown.enter)="toggle($event)">
                 <span class="ui-accordion-toggle-icon" [ngClass]="selected ? accordion.collapseIcon : accordion.expandIcon"></span>
                 <span class="ui-accordion-header-text" *ngIf="!hasHeaderFacet">
                     {{header}}
@@ -20,7 +21,7 @@ let idx: number = 0;
                 <ng-content select="p-header" *ngIf="hasHeaderFacet"></ng-content>
             </a>
         </div>
-        <div [attr.id]="id + '-content'" class="ui-accordion-content-wrapper" [@tabContent]="selected ? 'visible' : 'hidden'" (@tabContent.done)="onToggleDone($event)"
+        <div [attr.id]="id + '-content'" class="ui-accordion-content-wrapper" [@tabContent]="selected ? {value: 'visible', params: {transitionParams: transitionOptions}} : {value: 'hidden', params: {transitionParams: transitionOptions}}" (@tabContent.done)="onToggleDone($event)"
             [ngClass]="{'ui-accordion-content-wrapper-overflown': !selected||animating}" 
             role="tabpanel" [attr.aria-hidden]="!selected" [attr.aria-labelledby]="id">
             <div class="ui-accordion-content ui-widget-content" *ngIf="lazy ? selected : true">
@@ -36,7 +37,7 @@ let idx: number = 0;
             state('visible', style({
                 height: '*'
             })),
-            transition('visible <=> hidden', animate('400ms cubic-bezier(0.86, 0, 0.07, 1)'))
+            transition('visible <=> hidden', animate('{{transitionParams}}'))
         ])
     ]
 })
@@ -49,6 +50,8 @@ export class AccordionTab implements OnDestroy {
     @Input() disabled: boolean;
 
     @Output() selectedChange: EventEmitter<any> = new EventEmitter();
+
+    @Input() transitionOptions: string = '400ms cubic-bezier(0.86, 0, 0.07, 1)';
 
     @ContentChildren(Header) headerFacet: QueryList<Header>;
 
@@ -195,7 +198,7 @@ export class Accordion implements BlockableUI, AfterContentInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        if(this.tabListSubscription) {
+        if (this.tabListSubscription) {
             this.tabListSubscription.unsubscribe();
         }
     }
