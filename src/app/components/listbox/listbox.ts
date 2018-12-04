@@ -1,4 +1,5 @@
-import { NgModule, Component, ElementRef, Input, Output, EventEmitter, AfterContentInit, ContentChildren, ContentChild, QueryList, TemplateRef, IterableDiffers, forwardRef, ChangeDetectorRef } from '@angular/core';
+import { NgModule, Component, ElementRef, Input, Output, EventEmitter, AfterContentInit, ContentChildren, ContentChild, QueryList, TemplateRef,
+    forwardRef, ChangeDetectorRef, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SelectItem } from '../common/selectitem';
 import { SharedModule, PrimeTemplate, Footer, Header } from '../common/shared';
@@ -25,9 +26,9 @@ export const LISTBOX_VALUE_ACCESSOR: any = {
       <div class="ui-widget-header ui-corner-all ui-listbox-header ui-helper-clearfix" *ngIf="(checkbox && multiple && showToggleAll) || filter" [ngClass]="{'ui-listbox-header-w-checkbox': checkbox}">
         <div class="ui-chkbox ui-widget" *ngIf="checkbox && multiple && showToggleAll">
           <div class="ui-helper-hidden-accessible">
-            <input #cb type="checkbox" readonly="readonly" [checked]="allChecked">
+            <input type="checkbox" readonly="readonly" [checked]="allChecked" (focus)="onHeaderCheckboxFocus()" (blur)="onHeaderCheckboxBlur()" (keydown.space)="toggleAll($event)">
           </div>
-          <div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default" [ngClass]="{'ui-state-active':allChecked}" (click)="toggleAll($event,cb)">
+          <div #headerchkbox class="ui-chkbox-box ui-widget ui-corner-all ui-state-default" [ngClass]="{'ui-state-active': allChecked, 'ui-state-focus': headerCheckboxFocus}" (click)="toggleAll($event)">
             <span class="ui-chkbox-icon ui-clickable" [ngClass]="{'pi pi-check':allChecked}"></span>
           </div>
         </div>
@@ -38,13 +39,10 @@ export const LISTBOX_VALUE_ACCESSOR: any = {
       </div>
       <div class="ui-listbox-list-wrapper" [ngStyle]="listStyle">
         <ul class="ui-listbox-list">
-          <li *ngFor="let option of options; let i = index;" [style.display]="isItemVisible(option) ? 'block' : 'none'"
+          <li *ngFor="let option of options; let i = index;" [style.display]="isItemVisible(option) ? 'block' : 'none'" [attr.tabindex]="0"
               [ngClass]="{'ui-listbox-item ui-corner-all':true,'ui-state-highlight':isSelected(option), 'ui-state-disabled': option.disabled}"
               (click)="onOptionClick($event,option)" (dblclick)="onOptionDoubleClick($event,option)" (touchend)="onOptionTouchEnd($event,option)">
             <div class="ui-chkbox ui-widget" *ngIf="checkbox && multiple">
-              <div class="ui-helper-hidden-accessible">
-                <input type="checkbox" [checked]="isSelected(option)" [disabled]="disabled">
-              </div>
               <div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default" [ngClass]="{'ui-state-active':isSelected(option)}">
                 <span class="ui-chkbox-icon ui-clickable" [ngClass]="{'pi pi-check':isSelected(option)}"></span>
               </div>
@@ -93,6 +91,8 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
 
     @Output() onDblClick: EventEmitter<any> = new EventEmitter();
 
+    @ViewChild('headerchkbox') headerCheckboxViewChild: ElementRef;
+
     @ContentChild(Header) headerFacet;
 
     @ContentChild(Footer) footerFacet;
@@ -116,6 +116,12 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
     public focus: boolean;
 
     public _options: any[];
+
+    public headerCheckboxFocus: boolean;
+    
+    focusedIndex: number;
+    
+    focusedOption: any;
 
     constructor(public el: ElementRef, public domHandler: DomHandler, public objectUtils: ObjectUtils, public cd: ChangeDetectorRef) { }
 
@@ -181,7 +187,6 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
         else {
             this.onOptionClickSingle(event, option);
         }
-
         this.optionTouched = false;
     }
 
@@ -202,6 +207,8 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
             originalEvent: event,
             value: this.value
         })
+    
+        this.focusedOption = option;
     }
 
     onOptionClickSingle(event, option) {
@@ -235,6 +242,8 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
                 value: this.value
             });
         }
+    
+        this.focusedOption = option;
     }
 
     onOptionClickMultiple(event, option) {
@@ -278,6 +287,8 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
                 value: this.value
             });
         }
+    
+        this.focusedOption = option;
     }
 
     onOptionClickCheckbox(event, option) {
@@ -300,6 +311,8 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
             originalEvent: event,
             value: this.value
         });
+    
+        this.focusedOption = option;
     }
 
     removeOption(option: any): void {
@@ -351,7 +364,9 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
 
     allFilteredSelected(): boolean {
         let allSelected: boolean;
-        if (this.value && this.options && this.options.length)  {
+        let options = this.filterValue ? this.getFilteredOptions() : this.options;
+
+        if (this.value && options && options.length)  {
             allSelected = true;
             for (let opt of this.options) {
                 if (this.isItemVisible(opt)) {
@@ -369,14 +384,16 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
     onFilter(event) {
         let query = event.target.value.trim().toLowerCase();
         this._filterValue = query.length ? query : null;
+        this.focusedOption = null;
+        this.focusedIndex = null;
     }
 
-    toggleAll(event, checkbox) {
+    toggleAll(event) {
         if (this.disabled || this.readonly || !this.options || this.options.length === 0) {
             return;
         }
 
-        if (checkbox.checked) {
+        if (this.allChecked) {
             this.value = [];
         }
         else {
@@ -390,9 +407,10 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
                 }
             }
         }
-        checkbox.checked = !checkbox.checked;
+
         this.onModelChange(this.value);
         this.onChange.emit({ originalEvent: event, value: this.value });
+        event.preventDefault();
     }
 
     isItemVisible(option: SelectItem): boolean {
@@ -425,6 +443,104 @@ export class Listbox implements AfterContentInit, ControlValueAccessor {
 
     onInputBlur(event) {
         this.focus = false;
+    }
+    
+    @HostListener('keydown',['$event'])
+    onKeyDown(event:KeyboardEvent){
+        if (this.readonly) {
+            return;
+        }
+        
+        let opts = this.getFilteredOptions();
+        let currentOption = <HTMLLIElement>event.target;
+        this.focusedIndex = this.domHandler.indexWithDisplay(currentOption);
+        this.focusedOption = opts[this.focusedIndex]
+        
+        switch(event.which) {
+            //down
+            case 40:
+                this.focusedIndex = this.focusedIndex + 1;
+                if (this.focusedIndex != (opts.length)) {
+                    this.focusedOption = opts[this.focusedIndex];
+                }
+                let nextOption = this.findNextOption(currentOption);
+                if(nextOption) {
+                    nextOption.focus();
+                }
+                
+                event.preventDefault();
+                break;
+            
+            //up
+            case 38:
+                this.focusedIndex = this.focusedIndex - 1;
+                this.focusedOption = opts[this.focusedIndex];
+                let prevOption = this.findPrevOption(currentOption);
+                if (prevOption) {
+                    prevOption.focus();
+                }
+                
+                event.preventDefault();
+                break;
+            
+            //enter
+            case 13:
+                if (this.focusedOption) {
+                    this.onOptionClick(event,this.focusedOption);
+                }
+                event.preventDefault();
+                break;
+        }
+    }
+    
+    findPrevOption(row)  {
+        let prevOption = row.previousElementSibling;
+        if (prevOption) {
+            if (this.domHandler.hasClass(prevOption, 'ui-listbox-item') && prevOption.style.display == 'block')
+                return prevOption;
+            else
+                return this.findPrevOption(prevOption);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    findNextOption(row) {
+        let nextOption = row.nextElementSibling;
+        if (nextOption) {
+            if (this.domHandler.hasClass(nextOption, 'ui-listbox-item') && nextOption.style.display == 'block')
+                return nextOption;
+            else
+                return this.findNextOption(nextOption);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    getFilteredOptions() {
+        let filteredOptions = [];
+        if(this.filterValue) {
+            for (let i = 0; i < this.options.length; i++) {
+                let opt = this.options[i];
+                if (this.isItemVisible(opt) && !opt.disabled) {
+                    filteredOptions.push(opt);
+                }
+            }
+            return filteredOptions;
+        }
+        else {
+            return this.options;
+        }
+    }
+
+    onHeaderCheckboxFocus() {
+        this.headerCheckboxFocus = true;
+    }
+
+    onHeaderCheckboxBlur() {
+        this.headerCheckboxFocus = false;
     }
 }
 

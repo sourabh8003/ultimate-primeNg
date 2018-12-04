@@ -14,7 +14,7 @@ import {CommonModule} from '@angular/common';
                 <span class="ui-carousel-button ui-carousel-prev-button pi pi-arrow-circle-left" (click)="onPrevNav()" 
                         [ngClass]="{'ui-state-disabled':(page === 0 && !circular)}" *ngIf="value&&value.length"></span>
                 <div *ngIf="displayPageLinks" class="ui-carousel-page-links">
-                    <a href="#" (click)="setPageWithLink($event,i)" class="ui-carousel-page-link pi" *ngFor="let links of anchorPageLinks;let i=index" [ngClass]="{'pi-circle-on': page===i, 'pi-circle-off': page !== i}"></a>
+                    <a tabindex="0" (click)="setPageWithLink($event,i)" class="ui-carousel-page-link pi" *ngFor="let links of anchorPageLinks;let i=index" [ngClass]="{'pi-circle-on': page===i, 'pi-circle-off': page !== i}"></a>
                 </div>
                 <select *ngIf="displayPageDropdown" class="ui-carousel-dropdown ui-widget ui-state-default ui-corner-left" [value]="page" (change)="onDropdownChange($event.target.value)">
                     <option *ngFor="let option of selectDropdownOptions" [value]="option" [selected]="value == option">{{option+1}}</option>
@@ -184,7 +184,9 @@ export class Carousel implements AfterViewChecked,AfterViewInit,OnDestroy{
         this.items = this.domHandler.find(this.itemsViewChild.nativeElement, 'li');
         this.calculateColumns();
         this.calculateItemWidths();
-        
+
+        this.setPage(Math.floor(this.firstVisible / this.columns), true);
+
         if(!this.responsive) {
             this.containerViewChild.nativeElement.style.width = (this.domHandler.width(this.containerViewChild.nativeElement)) + 'px';
         }

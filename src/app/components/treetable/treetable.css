@@ -15,14 +15,19 @@
 }
 
 .ui-treetable .ui-treetable-toggler {
-    vertical-align: middle;
+    cursor: pointer;
+    display: inline-block;
+    height: 1em;
+    position: relative;
+    top: 50%;
+    margin-top: -.5em;
 }
 
 .ui-treetable .ui-sortable-column {
     cursor: pointer;
 }
 
-.ui-treetable .ui-treetable-sort-icon {
+.ui-treetable p-treetablesorticon {
     vertical-align: middle;
 }
 
@@ -139,16 +144,6 @@
     position: absolute;
     z-index: 10;
     display: none;
-}
-
-/* Edit */
-.ui-treetable .ui-treetable-tbody > tr > td.ui-editing-cell input {
-    padding: 0;
-    border: 0 none;
-}
-
-.ui-treetable .ui-treetable-tbody > tr > td.ui-editing-cell p-treetablecelleditor >  * {
-    width: 100%;
 }
 
 /* Reorder */

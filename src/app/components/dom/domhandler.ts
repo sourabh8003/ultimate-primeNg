@@ -7,6 +7,8 @@ export class DomHandler {
 
     private calculatedScrollbarWidth: number = null;
 
+    private calculatedScrollbarHeight: number = null;
+
     private browser: any;
 
     public addClass(element: any, className: string): void {
@@ -66,6 +68,16 @@ export class DomHandler {
         for (var i = 0; i < children.length; i++) {
             if (children[i] == element) return num;
             if (children[i].nodeType == 1) num++;
+        }
+        return -1;
+    }
+    
+    public indexWithDisplay(element: any): number {
+        let children = element.parentNode.childNodes;
+        let num = 0;
+        for (var i = 0; i < children.length; i++) {
+            if (children[i] == element && children[i].style.display == 'block') return num;
+            if (children[i].nodeType == 1 && children[i].style.display == 'block') num++;
         }
         return -1;
     }
@@ -240,7 +252,7 @@ export class DomHandler {
 
     public matches(element, selector: string): boolean {
         var p = Element.prototype;
-        var f = p['matches'] || p.webkitMatchesSelector || p['mozMatchesSelector'] || p.msMatchesSelector || function (s) {
+        var f = p['matches'] || p.webkitMatchesSelector || p['mozMatchesSelector'] || p['msMatchesSelector'] || function (s) {
             return [].indexOf.call(document.querySelectorAll(s), this) !== -1;
         };
         return f.call(element, selector);
@@ -415,6 +427,22 @@ export class DomHandler {
         this.calculatedScrollbarWidth = scrollbarWidth;
         
         return scrollbarWidth;
+    }
+
+    calculateScrollbarHeight(): number {
+        if(this.calculatedScrollbarHeight !== null)
+            return this.calculatedScrollbarHeight;
+        
+        let scrollDiv = document.createElement("div");
+        scrollDiv.className = "ui-scrollbar-measure";
+        document.body.appendChild(scrollDiv);
+
+        let scrollbarHeight = scrollDiv.offsetHeight - scrollDiv.clientHeight;
+        document.body.removeChild(scrollDiv);
+
+        this.calculatedScrollbarWidth = scrollbarHeight;
+        
+        return scrollbarHeight;
     }
     
     invokeElementMethod(element: any, methodName: string, args?: any[]): void {

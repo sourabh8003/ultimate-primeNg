@@ -1,4 +1,4 @@
-import {NgModule,Component,ElementRef,OnDestroy,Input,EventEmitter,Renderer2,ContentChild,NgZone} from '@angular/core';
+import {NgModule,Component,ElementRef,OnDestroy,Input,EventEmitter,Renderer2,ContentChild,NgZone,ViewChild} from '@angular/core';
 import {trigger,state,style,transition,animate,AnimationEvent} from '@angular/animations';
 import {CommonModule} from '@angular/common';
 import {DomHandler} from '../dom/domhandler';
@@ -16,11 +16,11 @@ import {Subscription}   from 'rxjs';
             [@animation]="{value: 'visible', params: {transitionParams: transitionOptions}}" (@animation.start)="onAnimationStart($event)" *ngIf="visible">
             <div class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix ui-corner-top">
                 <span class="ui-dialog-title" *ngIf="header">{{header}}</span>
-                <a *ngIf="closable" [ngClass]="{'ui-dialog-titlebar-icon ui-dialog-titlebar-close ui-corner-all':true}" href="#" role="button" (click)="close($event)">
+                <a *ngIf="closable" [ngClass]="{'ui-dialog-titlebar-icon ui-dialog-titlebar-close ui-corner-all':true}" tabindex="0" role="button" (click)="close($event)" (keydown.enter)="close($event)">
                     <span class="pi pi-fw pi-times"></span>
                 </a>
             </div>
-            <div class="ui-dialog-content ui-widget-content">
+            <div #content class="ui-dialog-content ui-widget-content">
                 <i [ngClass]="'ui-confirmdialog-icon'" [class]="icon" *ngIf="icon"></i>
                 <span class="ui-confirmdialog-message" [innerHTML]="message"></span>
             </div>
@@ -77,6 +77,12 @@ export class ConfirmDialog implements OnDestroy {
     @Input() width: any;
 
     @Input() height: any;
+
+    @Input() positionLeft: number;
+
+    @Input() positionTop: number;
+
+    @Input() breakpoint: number = 640;
     
     @Input() closeOnEscape: boolean = true;
 
@@ -97,6 +103,8 @@ export class ConfirmDialog implements OnDestroy {
     @Input() transitionOptions: string = '400ms cubic-bezier(0.25, 0.8, 0.25, 1)';
 
     @ContentChild(Footer) footer;
+
+    @ViewChild('content') contentViewChild: ElementRef;
     
     confirmation: Confirmation;
         
@@ -113,6 +121,8 @@ export class ConfirmDialog implements OnDestroy {
     contentContainer: HTMLDivElement;
       
     subscription: Subscription;
+
+    preWidth: number;
                 
     constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, private confirmationService: ConfirmationService, public zone: NgZone) {
         this.subscription = this.confirmationService.requireConfirmation$.subscribe(confirmation => {
@@ -149,7 +159,7 @@ export class ConfirmDialog implements OnDestroy {
                 this.domHandler.findSingle(this.container, 'button').focus();
                 this.appendContainer();
                 this.moveOnTop();
-                this.center();
+                this.positionOverlay();
                 this.bindGlobalListeners();
                 this.enableModality();
             break;
@@ -157,6 +167,48 @@ export class ConfirmDialog implements OnDestroy {
             case 'void':
                 this.onOverlayHide();
             break;
+        }
+    }
+
+    onWindowResize(event) {        
+        let viewport = this.domHandler.getViewport();
+        let width = this.domHandler.getOuterWidth(this.container);
+        if (viewport.width <= this.breakpoint) {
+            if (!this.preWidth) {
+                this.preWidth = width;
+            }
+            this.container.style.left = '0px';
+            this.container.style.width = '100%';
+        }
+        else {
+            this.container.style.width = this.preWidth + 'px';
+            this.positionOverlay();
+        }
+    }
+
+    positionOverlay() {
+        let viewport = this.domHandler.getViewport();
+        if (this.domHandler.getOuterHeight(this.container) > viewport.height) {
+             this.contentViewChild.nativeElement.style.height = (viewport.height * .75) + 'px';
+             this.container.style.height = 'auto';
+        } 
+        else {
+            this.contentViewChild.nativeElement.style.height = null;
+            if (this.height) {
+                this.container.style.height = this.height + 'px';
+            }
+        }
+        
+        if (this.positionLeft >= 0 && this.positionTop >= 0) {
+            this.container.style.left = this.positionLeft + 'px';
+            this.container.style.top = this.positionTop + 'px';
+        }
+        else if (this.positionTop >= 0) {
+            this.center();
+            this.container.style.top = this.positionTop + 'px';
+        }
+        else {
+            this.center();
         }
     }
 
@@ -244,7 +296,7 @@ export class ConfirmDialog implements OnDestroy {
         
         if (this.responsive) {
             this.zone.runOutsideAngular(() => {
-                this.documentResponsiveListener = this.center.bind(this);
+                this.documentResponsiveListener = this.onWindowResize.bind(this);
                 window.addEventListener('resize', this.documentResponsiveListener);
             });
         }

@@ -14,3 +14,6 @@ export { SelectItem } from './selectitem';
 export { SelectItemGroup } from './selectitemgroup';
 export { SortMeta } from './sortmeta';
 export { SortEvent } from './sortevent';
+export { DialogService } from '../dynamicdialog/dialogservice';
+export { DynamicDialogConfig } from '../dynamicdialog/dynamicdialog-config';
+export { DynamicDialogRef } from '../dynamicdialog/dynamicdialog-ref';

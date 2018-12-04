@@ -44,10 +44,10 @@ export interface LocaleSettings {
                     <div class="ui-datepicker-group ui-widget-content" *ngFor="let month of months; let i = index;">
                         <div class="ui-datepicker-header ui-widget-header ui-helper-clearfix ui-corner-all">
                             <ng-content select="p-header"></ng-content>
-                            <a class="ui-datepicker-prev ui-corner-all" href="#" (click)="navBackward($event)" *ngIf="i === 0">
+                            <a class="ui-datepicker-prev ui-corner-all" tabindex="0" (click)="navBackward($event)" *ngIf="i === 0">
                                 <span class="pi pi-chevron-left"></span>
                             </a>
-                            <a class="ui-datepicker-next ui-corner-all" href="#" (click)="navForward($event)" *ngIf="numberOfMonths === 1 ? true : (i === numberOfMonths -1)">
+                            <a class="ui-datepicker-next ui-corner-all" tabindex="0" (click)="navForward($event)" *ngIf="numberOfMonths === 1 ? true : (i === numberOfMonths -1)">
                                 <span class="pi pi-chevron-right"></span>
                             </a>
                             <div class="ui-datepicker-title">
@@ -91,63 +91,63 @@ export interface LocaleSettings {
                         </div>
                     </div>
                     <div class="ui-monthpicker" *ngIf="view === 'month'">
-                        <a href="#" *ngFor="let m of monthPickerValues; let i = index" (click)="onMonthSelect($event, i)" class="ui-monthpicker-month" [ngClass]="{'ui-state-active': isMonthSelected(i)}">
+                        <a tabindex="0" *ngFor="let m of monthPickerValues; let i = index" (click)="onMonthSelect($event, i)" class="ui-monthpicker-month" [ngClass]="{'ui-state-active': isMonthSelected(i)}">
                             {{m}}
                         </a>
                     </div>
                 </ng-container>
                 <div class="ui-timepicker ui-widget-header ui-corner-all" *ngIf="showTime||timeOnly">
                     <div class="ui-hour-picker">
-                        <a href="#" (click)="incrementHour($event)">
+                        <a tabindex="0" (mousedown)="onTimePickerElementMouseDown($event, 0, 1)" (mouseup)="onTimePickerElementMouseUp($event)">
                             <span class="pi pi-chevron-up"></span>
                         </a>
                         <span [ngStyle]="{'display': currentHour < 10 ? 'inline': 'none'}">0</span><span>{{currentHour}}</span>
-                        <a href="#" (click)="decrementHour($event)">
+                        <a tabindex="0" (mousedown)="onTimePickerElementMouseDown($event, 0, -1)" (mouseup)="onTimePickerElementMouseUp($event)">
                             <span class="pi pi-chevron-down"></span>
                         </a>
                     </div>
                     <div class="ui-separator">
-                        <a href="#">
+                        <a tabindex="0">
                             <span class="pi pi-chevron-up"></span>
                         </a>
                         <span>:</span>
-                        <a href="#">
+                        <a tabindex="0">
                             <span class="pi pi-chevron-down"></span>
                         </a>
                     </div>
                     <div class="ui-minute-picker">
-                        <a href="#" (click)="incrementMinute($event)">
+                        <a tabindex="0" (mousedown)="onTimePickerElementMouseDown($event, 1, 1)" (mouseup)="onTimePickerElementMouseUp($event)">
                             <span class="pi pi-chevron-up"></span>
                         </a>
                         <span [ngStyle]="{'display': currentMinute < 10 ? 'inline': 'none'}">0</span><span>{{currentMinute}}</span>
-                        <a href="#" (click)="decrementMinute($event)">
+                        <a tabindex="0" (mousedown)="onTimePickerElementMouseDown($event, 1, -1)" (mouseup)="onTimePickerElementMouseUp($event)">
                             <span class="pi pi-chevron-down"></span>
                         </a>
                     </div>
                     <div class="ui-separator" *ngIf="showSeconds">
-                        <a href="#">
+                        <a tabindex="0">
                             <span class="pi pi-chevron-up"></span>
                         </a>
                         <span>:</span>
-                        <a href="#">
+                        <a tabindex="0">
                             <span class="pi pi-chevron-down"></span>
                         </a>
                     </div>
                     <div class="ui-second-picker" *ngIf="showSeconds">
-                        <a href="#" (click)="incrementSecond($event)">
+                        <a tabindex="0" (mousedown)="onTimePickerElementMouseDown($event, 2, 1)" (mouseup)="onTimePickerElementMouseUp($event)">
                             <span class="pi pi-chevron-up"></span>
                         </a>
                         <span [ngStyle]="{'display': currentSecond < 10 ? 'inline': 'none'}">0</span><span>{{currentSecond}}</span>
-                        <a href="#" (click)="decrementSecond($event)">
+                        <a tabindex="0" (mousedown)="onTimePickerElementMouseDown($event, 2, -1)" (mouseup)="onTimePickerElementMouseUp($event)">
                             <span class="pi pi-chevron-down"></span>
                         </a>
                     </div>
                     <div class="ui-ampm-picker" *ngIf="hourFormat=='12'">
-                        <a href="#" (click)="toggleAMPM($event)">
+                        <a tabindex="0" (click)="toggleAMPM($event)">
                             <span class="pi pi-chevron-up"></span>
                         </a>
                         <span>{{pm ? 'PM' : 'AM'}}</span>
-                        <a href="#" (click)="toggleAMPM($event)">
+                        <a tabindex="0" (click)="toggleAMPM($event)">
                             <span class="pi pi-chevron-down"></span>
                         </a>
                     </div>
@@ -383,6 +383,8 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
     
     calendarElement: any;
     
+    timePickerTimer:any;
+    
     documentClickListener: any;
     
     ticksTo1970: number;
@@ -416,6 +418,8 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
     todayElement: any;
     
     focusElement: any;
+
+    documentResizeListener: any;
 
     @Input() get minDate(): Date {
         return this._minDate;
@@ -742,7 +746,7 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
         if (this.isSingleSelection() && (!this.showTime || this.hideOnDateTimeSelect)) {
             setTimeout(() => {
                 event.preventDefault();
-                this.overlayVisible = false;
+                this.hideOverlay();
 
                 if (this.mask) {
                     this.disableModality();
@@ -1091,7 +1095,7 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
     onInputFocus(event: Event) {
         this.focus = true;
         if (this.showOnFocus) {
-          this.showOverlay();
+            this.showOverlay();
         }
         this.onFocus.emit(event);
     }
@@ -1100,6 +1104,9 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
         this.datepickerClick = true;
         if (this.overlay && this.autoZIndex) {
             this.overlay.style.zIndex = String(this.baseZIndex + (++DomHandler.zindex));
+        }
+        if (this.showOnFocus && !this.overlayVisible) {
+            this.showOverlay();
         }
     }
     
@@ -1118,7 +1125,7 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
             this.showOverlay();
         }
         else {
-            this.overlayVisible = false;
+            this.hideOverlay();
         }
         
         this.datepickerClick = true;
@@ -1127,7 +1134,10 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
     onInputKeydown(event) {
         this.isKeydown = true;
         if (event.keyCode === 9) {
-            this.overlayVisible = false;
+            if (this.touchUI)
+                this.disableModality();
+            else
+                this.hideOverlay();
         }
     }
     
@@ -1158,11 +1168,62 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
 
                 this.currentHour = (newHour >= 13) ? (newHour - 12) : newHour;
             }
-            
+        }
+        event.preventDefault();
+    }
+
+    onTimePickerElementMouseDown(event: Event, type: number, direction: number) {
+        if (!this.disabled) {
+            this.repeat(event, null, type, direction);
+            event.preventDefault();
+        }
+    }
+
+    onTimePickerElementMouseUp(event: Event) {
+        if (!this.disabled) {
+            this.clearTimePickerTimer();
             this.updateTime();
         }
-    
-        event.preventDefault();
+    }
+
+    repeat(event: Event, interval: number, type: number, direction: number) {
+        let i = interval||500;
+
+        this.clearTimePickerTimer();
+        this.timePickerTimer = setTimeout(() => {
+            this.repeat(event, 100, type, direction);
+        }, i);
+
+        switch(type) {
+            case 0:
+                if (direction === 1)
+                    this.incrementHour(event);
+                else
+                    this.decrementHour(event);
+            break;
+
+            case 1:
+                if (direction === 1)
+                    this.incrementMinute(event);
+                else
+                    this.decrementMinute(event);
+            break;
+
+            case 2:
+                if (direction === 1)
+                    this.incrementSecond(event);
+                else
+                    this.decrementSecond(event);
+            break;
+        }
+
+        this.updateInputfield();
+    }
+
+    clearTimePickerTimer() {
+        if (this.timePickerTimer) {
+            clearInterval(this.timePickerTimer);
+        }
     }
     
     decrementHour(event) {
@@ -1178,8 +1239,6 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
                 }
                 this.currentHour = (newHour <= 0) ? (12 + newHour) : newHour;
             }
-            
-            this.updateTime();
         }
 
         event.preventDefault();
@@ -1215,7 +1274,6 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
         let newMinute = this.currentMinute + this.stepMinute;
         if (this.validateMinute(newMinute)) {
             this.currentMinute = (newMinute > 59) ? newMinute - 60 : newMinute;
-            this.updateTime();
         }
         
         event.preventDefault();
@@ -1225,7 +1283,6 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
         let newMinute = this.currentMinute - this.stepMinute;
         if (this.validateMinute(newMinute)) {
             this.currentMinute = (newMinute < 0) ? 60 + newMinute : newMinute;
-            this.updateTime();
         }
         
         event.preventDefault();
@@ -1264,7 +1321,6 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
         let newSecond = this.currentSecond + this.stepSecond;
         if (this.validateSecond(newSecond)) {
             this.currentSecond = (newSecond > 59) ? newSecond - 60 : newSecond;
-            this.updateTime();
         }
     
         event.preventDefault();
@@ -1274,7 +1330,6 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
         let newSecond = this.currentSecond - this.stepSecond;
         if (this.validateSecond(newSecond)) {
             this.currentSecond = (newSecond < 0) ? 60 + newSecond : newSecond;
-            this.updateTime();
         }
         
         event.preventDefault();
@@ -1472,7 +1527,12 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
     }
     
     showOverlay() {
+        this.updateUI();
         this.overlayVisible = true;
+    }
+
+    hideOverlay() {
+        this.overlayVisible = false;
     }
 
     onOverlayAnimationStart(event: AnimationEvent) {
@@ -1487,11 +1547,13 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
                     }
                     this.alignOverlay();
                     this.bindDocumentClickListener();
+                    this.bindDocumentResizeListener();
                 }
             break;
 
             case 'void':
                 this.onOverlayHide();
+                this.onClose.emit(event);
             break;
         }
     }
@@ -1555,7 +1617,7 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
                 this.domHandler.removeClass(document.body, 'ui-overflow-hidden');
             }
 
-            this.overlayVisible = false;
+            this.hideOverlay();
             this.unbindMaskClickListener();
 
             this.mask = null;
@@ -1921,18 +1983,17 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
     onClearButtonClick(event) {
         this.updateModel(null);
         this.updateInputfield();
-        this.overlayVisible = false;
+        this.hideOverlay();
         this.onClearClick.emit(event);
     }
     
     bindDocumentClickListener() {
         if (!this.documentClickListener) {
             this.documentClickListener = this.renderer.listen('document', 'click', (event) => {
-                if (!this.datepickerClick&&this.overlayVisible) {
-                    this.overlayVisible = false;
-                    this.onClose.emit(event);
+                if (!this.datepickerClick && this.overlayVisible) {
+                    this.hideOverlay();
                 }
-                
+
                 this.datepickerClick = false;
                 this.cd.detectChanges();
             });
@@ -1946,9 +2007,30 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
         }
     }
 
+    bindDocumentResizeListener() {
+        if (!this.documentResizeListener && !this.touchUI) {
+            this.documentResizeListener = this.onWindowResize.bind(this);
+            window.addEventListener('resize', this.documentResizeListener);
+        }
+    }
+    
+    unbindDocumentResizeListener() {
+        if (this.documentResizeListener) {
+            window.removeEventListener('resize', this.documentResizeListener);
+            this.documentResizeListener = null;
+        }
+    }
+
+    onWindowResize() {
+        if (this.overlayVisible) {
+            this.hideOverlay();
+        }
+    }
+
     onOverlayHide() {
         this.unbindDocumentClickListener();
         this.unbindMaskClickListener();
+        this.unbindDocumentResizeListener();
         this.overlay = null;
     }
     

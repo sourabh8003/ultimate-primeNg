@@ -1,4 +1,4 @@
-import {NgModule,Component,Input,Output,OnDestroy,EventEmitter,Renderer2,ElementRef,ChangeDetectorRef} from '@angular/core';
+import {NgModule,Component,Input,Output,OnDestroy,EventEmitter,Renderer2,ElementRef,ChangeDetectorRef,NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomHandler} from '../dom/domhandler';
 import {trigger,state,style,transition,animate,AnimationEvent} from '@angular/animations';
@@ -11,7 +11,7 @@ import {trigger,state,style,transition,animate,AnimationEvent} from '@angular/an
             <div class="ui-overlaypanel-content">
                 <ng-content></ng-content>
             </div>
-            <a href="#" *ngIf="showCloseIcon" class="ui-overlaypanel-close ui-state-default" (click)="onCloseClick($event)">
+            <a tabindex="0" *ngIf="showCloseIcon" class="ui-overlaypanel-close ui-state-default" (click)="onCloseClick($event)" (keydown.enter)="hide()">
                 <span class="ui-overlaypanel-close-icon pi pi-times"></span>
             </a>
         </div>
@@ -74,18 +74,22 @@ export class OverlayPanel implements OnDestroy {
 
     documentResizeListener: any;
     
-    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, private cd: ChangeDetectorRef) {}
+    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, private cd: ChangeDetectorRef, private zone: NgZone) {}
         
     bindDocumentClickListener() {
         if (!this.documentClickListener && this.dismissable) {
-            this.documentClickListener = this.renderer.listen('document', 'click', () => {
-                if (!this.selfClick && !this.targetClickEvent) {
-                    this.hide();
-                }
-                
-                this.selfClick = false;
-                this.targetClickEvent = false;
-                this.cd.markForCheck();
+         this.zone.runOutsideAngular(() => {
+                this.documentClickListener = this.renderer.listen('document', 'click', () => {
+                    if (!this.selfClick && !this.targetClickEvent) {
+                        this.zone.run(() => {
+                            this.hide();
+                        });
+                    }
+ 
+                    this.selfClick = false;
+                    this.targetClickEvent = false;
+                    this.cd.markForCheck();
+                });
             });
         }
     }
@@ -156,6 +160,9 @@ export class OverlayPanel implements OnDestroy {
                     this.container.style.zIndex = String(this.baseZIndex + (++DomHandler.zindex));
                 }
                 this.domHandler.absolutePosition(this.container, this.target);
+                if (this.domHandler.getOffset(this.container).top < this.domHandler.getOffset(this.target).top) {
+                    this.domHandler.addClass(this.container, 'ui-overlaypanel-flipped');
+                }
                 this.bindDocumentClickListener();
                 this.bindDocumentResizeListener();
             break;

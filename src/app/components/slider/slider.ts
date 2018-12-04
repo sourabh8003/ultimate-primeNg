@@ -1,7 +1,4 @@
-import {
-    NgModule, Component, ElementRef, OnDestroy, Input, Output, SimpleChange, EventEmitter, forwardRef, Renderer2,
-    NgZone
-} from '@angular/core';
+import {NgModule, Component, ElementRef, OnDestroy, Input, Output, SimpleChange, EventEmitter, forwardRef, Renderer2,NgZone,ChangeDetectorRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomHandler} from '../dom/domhandler';
 import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
@@ -58,7 +55,7 @@ export class Slider implements OnDestroy,ControlValueAccessor {
     
     public value: number;
     
-    public values: number;
+    public values: number[];
     
     public handleValue: number;
     
@@ -92,7 +89,7 @@ export class Slider implements OnDestroy,ControlValueAccessor {
 
     public starty: number;
     
-    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, private ngZone: NgZone) {}
+    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, private ngZone: NgZone, public cd: ChangeDetectorRef) {}
     
     onMouseDown(event:Event, index?:number) {
         if(this.disabled) {
@@ -243,6 +240,7 @@ export class Slider implements OnDestroy,ControlValueAccessor {
             this.value = value||0;
         
         this.updateHandleValue();
+        this.cd.markForCheck();
     }
     
     registerOnChange(fn: Function): void {

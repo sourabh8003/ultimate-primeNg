@@ -1,4 +1,4 @@
-import { Routes,RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { NgModule } from '@angular/core';
 import { HomeComponent } from './components/home/home.component';
 
@@ -32,12 +32,14 @@ import { HomeComponent } from './components/home/home.component';
             {path: 'dataview', loadChildren: './components/dataview/dataviewdemo.module#DataViewDemoModule'},
             {path: 'defer', loadChildren: './components/defer/deferdemo.module#DeferDemoModule'},
             {path: 'dialog', loadChildren: './components/dialog/dialogdemo.module#DialogDemoModule'},
+            {path: 'dynamicdialog', loadChildren: './components/dynamicdialog/dynamicdialogdemo.module#DynamicDialogDemoModule'},
             {path: 'dragdrop', loadChildren: './components/dragdrop/dragdropdemo.module#DragDropDemoModule'},
             {path: 'dropdown', loadChildren: './components/dropdown/dropdowndemo.module#DropdownDemoModule'},
             {path: 'editor', loadChildren: './components/editor/editordemo.module#EditorDemoModule'},
             {path: 'fieldset', loadChildren: './components/fieldset/fieldsetdemo.module#FieldsetDemoModule'},
             {path: 'fileupload', loadChildren: './components/fileupload/fileuploaddemo.module#FileUploadDemoModule'},
             {path: 'flexgrid', loadChildren: './components/flexgrid/flexgriddemo.module#FlexGridDemoModule'},
+            {path: 'fullcalendar', loadChildren: './components/fullcalendar/fullcalendardemo.module#FullCalendarDemoModule'},
             {path: 'galleria', loadChildren: './components/galleria/galleriademo.module#GalleriaDemoModule'},
             {path: 'gmap', loadChildren: './components/gmap/gmapdemo.module#GMapDemoModule'},
             {path: 'grid', loadChildren: './components/grid/griddemo.module#GridDemoModule'},
@@ -71,7 +73,6 @@ import { HomeComponent } from './components/home/home.component';
             {path: 'rating', loadChildren: './components/rating/ratingdemo.module#RatingDemoModule'},
             {path: 'responsive', loadChildren: './components/responsive/responsivedemo.module#ResponsiveDemoModule'},
             {path: 'rtl', loadChildren: './components/rtl/rtldemo.module#RTLDemoModule'},
-            {path: 'schedule', loadChildren: './components/schedule/scheduledemo.module#ScheduleDemoModule'},
             {path: 'scrollpanel', loadChildren: './components/scrollpanel/scrollpaneldemo.module#ScrollPanelDemoModule' },
             {path: 'selectbutton', loadChildren: './components/selectbutton/selectbuttondemo.module#SelectButtonDemoModule'},
             {path: 'sidebar', loadChildren: './components/sidebar/sidebardemo.module#SidebarDemoModule'},
@@ -93,8 +94,9 @@ import { HomeComponent } from './components/home/home.component';
             {path: 'tree', loadChildren: './components/tree/treedemo.module#TreeDemoModule'},
             {path: 'treetable', loadChildren: './components/treetable/treetabledemo.module#TreeTableDemoModule'},
             {path: 'tristatecheckbox', loadChildren: './components/tristatecheckbox/tristatecheckboxdemo.module#TriStateCheckboxDemoModule'},
-            {path: 'validation', loadChildren: './components/validation/validationdemo.module#ValidationDemoModule'}
-        ])    
+            {path: 'validation', loadChildren: './components/validation/validationdemo.module#ValidationDemoModule'},
+            {path: 'virtualscroller', loadChildren: './components/virtualscroller/virtualscrollerdemo.module#VirtualScrollerDemoModule'}
+        ], {scrollPositionRestoration: 'enabled'})    
     ],
     exports: [RouterModule]
 })

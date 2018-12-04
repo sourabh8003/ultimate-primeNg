@@ -265,7 +265,13 @@ export class TreeTable implements AfterContentInit, OnInit, OnDestroy, Blockable
 
     editingCell: Element;
 
+    editingCellClick: boolean;
+
+    documentEditListener: any;
+
     initialized: boolean;
+
+    toggleRowIndex: number;
 
     ngOnInit() {
         if (this.lazy) {
@@ -1213,7 +1219,40 @@ export class TreeTable implements AfterContentInit, OnInit, OnDestroy, Blockable
         }
     }
 
+    updateEditingCell(cell) {
+        this.editingCell = cell;
+        this.bindDocumentEditListener();
+    }
+
+    isEditingCellValid() {
+        return (this.editingCell && this.domHandler.find(this.editingCell, '.ng-invalid.ng-dirty').length === 0);
+    }
+
+    bindDocumentEditListener() {
+        if (!this.documentEditListener) {
+            this.documentEditListener = (event) => {
+                if (this.editingCell && !this.editingCellClick && this.isEditingCellValid()) {
+                    this.domHandler.removeClass(this.editingCell, 'ui-editing-cell');
+                    this.editingCell = null;
+                    this.unbindDocumentEditListener();
+                }
+
+                this.editingCellClick = false;
+            };
+            
+            document.addEventListener('click', this.documentEditListener);
+        }
+    }
+     
+    unbindDocumentEditListener() {
+        if (this.documentEditListener) {
+            document.removeEventListener('click', this.documentEditListener);
+            this.documentEditListener = null;
+        }
+    }
+
     ngOnDestroy() {
+        this.unbindDocumentEditListener();
         this.editingCell = null;
         this.initialized = null;
     }
@@ -1415,10 +1454,20 @@ export class TTScrollableView implements AfterViewInit, OnDestroy, AfterViewChec
     setScrollHeight() {
         if(this.scrollHeight && this.scrollBodyViewChild && this.scrollBodyViewChild.nativeElement) {
             if(this.scrollHeight.indexOf('%') !== -1) {
+                let relativeHeight;
                 this.scrollBodyViewChild.nativeElement.style.visibility = 'hidden';
                 this.scrollBodyViewChild.nativeElement.style.height = '100px';     //temporary height to calculate static height
                 let containerHeight = this.domHandler.getOuterHeight(this.tt.el.nativeElement.children[0]);
-                let relativeHeight = this.domHandler.getOuterHeight(this.tt.el.nativeElement.parentElement) * parseInt(this.scrollHeight) / 100;
+                
+                if (this.scrollHeight.includes("calc")) {
+                    let percentHeight = parseInt(this.scrollHeight.slice(this.scrollHeight.indexOf("(") + 1, this.scrollHeight.indexOf("%")));
+                    let diffValue = parseInt(this.scrollHeight.slice(this.scrollHeight.indexOf("-") + 1, this.scrollHeight.indexOf(")")));
+                    relativeHeight = (this.domHandler.getOuterHeight(this.tt.el.nativeElement.parentElement) * percentHeight / 100) - diffValue;
+                }
+                else {
+                    relativeHeight = this.domHandler.getOuterHeight(this.tt.el.nativeElement.parentElement) * parseInt(this.scrollHeight) / 100;
+                }
+                
                 let staticHeight = containerHeight - 100;   //total height of headers, footers, paginators
                 let scrollBodyHeight = (relativeHeight - staticHeight);
 
@@ -1473,7 +1522,8 @@ export class TTScrollableView implements AfterViewInit, OnDestroy, AfterViewChec
     providers: [DomHandler],
     host: {
         '[class.ui-sortable-column]': 'isEnabled()',
-        '[class.ui-state-highlight]': 'sorted'
+        '[class.ui-state-highlight]': 'sorted',
+        '[attr.tabindex]': 'isEnabled() ? "0" : null'
     }
 })
 export class TTSortableColumn implements OnInit, OnDestroy {
@@ -1517,6 +1567,11 @@ export class TTSortableColumn implements OnInit, OnDestroy {
         }
     }
 
+    @HostListener('keydown.enter', ['$event'])
+    onEnterKey(event: MouseEvent) {
+        this.onClick(event);
+    }
+
     isEnabled() {
         return this.ttSortableColumnDisabled !== true;
     }
@@ -1531,9 +1586,7 @@ export class TTSortableColumn implements OnInit, OnDestroy {
 @Component({
     selector: 'p-treeTableSortIcon',
     template: `
-        <a href="#" (click)="onClick($event)" class="ui-treetable-sort-icon" [attr.aria-label]=" sortOrder === 1 ? ariaLabelAsc : sortOrder === -1 ? ariaLabelDesc : '' ">
-            <i class="ui-sortable-column-icon pi pi-fw" [ngClass]="{'pi-sort-up': sortOrder === 1, 'pi-sort-down': sortOrder === -1, 'pi-sort': sortOrder === 0}"></i>
-        </a>
+        <i class="ui-sortable-column-icon pi pi-fw" [ngClass]="{'pi-sort-up': sortOrder === 1, 'pi-sort-down': sortOrder === -1, 'pi-sort': sortOrder === 0}"></i>
     `
 })
 export class TTSortIcon implements OnInit, OnDestroy {
@@ -1809,6 +1862,11 @@ export class TTSelectableRow implements OnInit, OnDestroy {
                 rowNode: this.rowNode
             });
         }
+    }
+
+    @HostListener('keydown.enter', ['$event'])
+    onEnterKey(event: Event) {
+        this.onClick(event);
     }
 
     @HostListener('touchend', ['$event'])
@@ -2101,16 +2159,14 @@ export class TTEditableColumn implements AfterViewInit {
         }
     }
 
-    isValid() {
-        return (this.tt.editingCell && this.domHandler.find(this.tt.editingCell, '.ng-invalid.ng-dirty').length === 0);
-    }
-
     @HostListener('click', ['$event'])
     onClick(event: MouseEvent) {
         if (this.isEnabled()) {
+            this.tt.editingCellClick = true;
+
             if (this.tt.editingCell) {
                 if (this.tt.editingCell !== this.el.nativeElement) {
-                    if (!this.isValid()) {
+                    if (!this.tt.isEditingCellValid()) {
                         return;
                     }
         
@@ -2125,7 +2181,7 @@ export class TTEditableColumn implements AfterViewInit {
     }
 
     openCell() {
-        this.tt.editingCell = this.el.nativeElement;
+        this.tt.updateEditingCell(this.el.nativeElement);
         this.domHandler.addClass(this.el.nativeElement, 'ui-editing-cell');
         this.tt.onEditInit.emit({ field: this.field, data: this.data});
         this.zone.runOutsideAngular(() => {
@@ -2138,14 +2194,20 @@ export class TTEditableColumn implements AfterViewInit {
         });
     }
 
+    closeEditingCell() {
+        this.domHandler.removeClass(this.tt.editingCell, 'ui-editing-cell');
+        this.tt.editingCell = null;
+        this.tt.unbindDocumentEditListener();
+    }
+
     @HostListener('keydown', ['$event'])
     onKeyDown(event: KeyboardEvent) {
         if (this.isEnabled()) {
             //enter
             if (event.keyCode == 13) {
-                if (this.isValid()) {
+                if (this.tt.isEditingCellValid()) {
                     this.domHandler.removeClass(this.tt.editingCell, 'ui-editing-cell');
-                    this.tt.editingCell = null;
+                    this.closeEditingCell();
                     this.tt.onEditComplete.emit({ field: this.field, data: this.data });
                 }
     
@@ -2154,9 +2216,9 @@ export class TTEditableColumn implements AfterViewInit {
     
             //escape
             else if (event.keyCode == 27) {
-                if (this.isValid()) {
+                if (this.tt.isEditingCellValid()) {
                     this.domHandler.removeClass(this.tt.editingCell, 'ui-editing-cell');
-                    this.tt.editingCell = null;
+                    this.closeEditingCell();
                     this.tt.onEditCancel.emit({ field: this.field, data: this.data });
                 }
     
@@ -2293,13 +2355,98 @@ export class TreeTableCellEditor implements AfterContentInit {
             }
         });
     }
-    
+}
+
+@Directive({
+    selector: '[ttRow]',
+    host: {
+        '[attr.tabindex]': '"0"'
+    },
+    providers: [DomHandler]
+
+})
+export class TTRow {
+
+    @Input('ttRow') rowNode: any;
+
+    constructor(public tt: TreeTable, public el: ElementRef, public domHandler: DomHandler, public zone: NgZone) {}
+
+    @HostListener('keydown', ['$event'])
+    onKeyDown(event: KeyboardEvent) {
+        switch (event.which) {
+            //down arrow
+            case 40:
+                let nextRow = this.el.nativeElement.nextElementSibling;
+                if (nextRow) {
+                    nextRow.focus();
+                }
+
+                event.preventDefault();
+            break;
+
+            //down arrow
+            case 38:
+                let prevRow = this.el.nativeElement.previousElementSibling;
+                if (prevRow) {
+                    prevRow.focus();
+                }
+
+                event.preventDefault();
+            break;
+
+            //left arrow
+            case 37:
+                if (this.rowNode.node.expanded) {
+                    this.tt.toggleRowIndex = this.domHandler.index(this.el.nativeElement);
+                    this.rowNode.node.expanded = false;
+
+                    this.tt.onNodeCollapse.emit({
+                        originalEvent: event,
+                        node: this.rowNode.node
+                    });
+
+                    this.tt.updateSerializedValue();
+                    this.tt.tableService.onUIUpdate(this.tt.value);
+                    this.restoreFocus();
+                }
+            break;
+
+            //right arrow
+            case 39:
+                if (!this.rowNode.node.expanded) {
+                    this.tt.toggleRowIndex = this.domHandler.index(this.el.nativeElement);
+                    this.rowNode.node.expanded = true;
+
+                    this.tt.onNodeExpand.emit({
+                        originalEvent: event,
+                        node: this.rowNode.node
+                    });
+
+                    this.tt.updateSerializedValue();
+                    this.tt.tableService.onUIUpdate(this.tt.value);
+                    this.restoreFocus();
+                }
+            break;
+        }
+    }
+
+    restoreFocus() {
+        this.zone.runOutsideAngular(() => {
+            setTimeout(() => {
+                let row = this.domHandler.findSingle(this.tt.containerViewChild.nativeElement, '.ui-treetable-tbody').children[this.tt.toggleRowIndex];
+                if (row) {
+                    row.focus();
+                }
+            }, 25);
+        });
+    }
 }
 
 @Component({
     selector: 'p-treeTableToggler',
     template: `
-        <a href="#" class="ui-treetable-toggler" *ngIf="rowNode.node.leaf === false || rowNode.level !== 0 || rowNode.node.children && rowNode.node.children.length" (click)="onClick($event)" [style.visibility]="rowNode.node.leaf === false || (rowNode.node.children && rowNode.node.children.length) ? 'visible' : 'hidden'" [style.marginLeft]="rowNode.level * 16 + 'px'">
+        <a class="ui-treetable-toggler" *ngIf="rowNode.node.leaf === false || rowNode.level !== 0 || rowNode.node.children && rowNode.node.children.length" (click)="onClick($event)"
+            [style.visibility]="rowNode.node.leaf === false || (rowNode.node.children && rowNode.node.children.length) ? 'visible' : 'hidden'" [style.marginLeft]="rowNode.level * 16 + 'px'">
             <i [ngClass]="rowNode.node.expanded ? 'pi pi-fw pi-chevron-down' : 'pi pi-fw pi-chevron-right'"></i>
         </a>
     `
@@ -2335,7 +2482,7 @@ export class TreeTableToggler {
 
 @NgModule({
     imports: [CommonModule,PaginatorModule],
-    exports: [TreeTable,SharedModule,TreeTableToggler,TTSortableColumn,TTSortIcon,TTResizableColumn,TTReorderableColumn,TTSelectableRow,TTSelectableRowDblClick,TTContextMenuRow,TTCheckbox,TTHeaderCheckbox,TTEditableColumn,TreeTableCellEditor],
-    declarations: [TreeTable,TreeTableToggler,TTScrollableView,TTBody,TTSortableColumn,TTSortIcon,TTResizableColumn,TTReorderableColumn,TTSelectableRow,TTSelectableRowDblClick,TTContextMenuRow,TTCheckbox,TTHeaderCheckbox,TTEditableColumn,TreeTableCellEditor]
+    exports: [TreeTable,SharedModule,TreeTableToggler,TTSortableColumn,TTSortIcon,TTResizableColumn,TTRow,TTReorderableColumn,TTSelectableRow,TTSelectableRowDblClick,TTContextMenuRow,TTCheckbox,TTHeaderCheckbox,TTEditableColumn,TreeTableCellEditor],
+    declarations: [TreeTable,TreeTableToggler,TTScrollableView,TTBody,TTSortableColumn,TTSortIcon,TTResizableColumn,TTRow,TTReorderableColumn,TTSelectableRow,TTSelectableRowDblClick,TTContextMenuRow,TTCheckbox,TTHeaderCheckbox,TTEditableColumn,TreeTableCellEditor]
 })
 export class TreeTableModule { }

@@ -1,4 +1,5 @@
-import {NgModule,Component,ElementRef,AfterViewChecked,AfterContentInit,Input,Output,ContentChildren,QueryList,TemplateRef,EventEmitter,ViewChild} from '@angular/core';
+import { NgModule, Component, ElementRef, AfterViewChecked, AfterContentInit, Input, Output, ContentChildren, QueryList, TemplateRef, EventEmitter,
+    ViewChild, HostListener } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ButtonModule} from '../button/button';
 import {SharedModule,PrimeTemplate} from '../common/shared';
@@ -25,8 +26,8 @@ import {ObjectUtils} from '../utils/objectutils';
                 <ul #listelement class="ui-widget-content ui-orderlist-list ui-corner-bottom" [ngStyle]="listStyle" (dragover)="onListMouseMove($event)">
                     <ng-template ngFor [ngForTrackBy]="trackBy" let-item [ngForOf]="value" let-i="index" let-l="last">
                         <li class="ui-orderlist-droppoint" *ngIf="dragdrop && isItemVisible(item)" (dragover)="onDragOver($event, i)" (drop)="onDrop($event, i)" (dragleave)="onDragLeave($event)" 
-                            [ngClass]="{'ui-state-highlight': (i === dragOverItemIndex)}"></li>
-                        <li class="ui-orderlist-item"
+                            [ngClass]="{'ui-orderlist-droppoint-highlight': (i === dragOverItemIndex)}"></li>
+                        <li class="ui-orderlist-item" [attr.tabindex]="0"
                             [ngClass]="{'ui-state-highlight':isSelected(item)}" 
                             (click)="onItemClick($event,item,i)" (touchend)="onItemTouchEnd($event)"
                             [style.display]="isItemVisible(item) ? 'block' : 'none'"
@@ -34,7 +35,7 @@ import {ObjectUtils} from '../utils/objectutils';
                             <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: item, index: i}"></ng-container>
                         </li>
                         <li class="ui-orderlist-droppoint" *ngIf="dragdrop && l" (dragover)="onDragOver($event, i + 1)" (drop)="onDrop($event, i + 1)" (dragleave)="onDragLeave($event)" 
-                            [ngClass]="{'ui-state-highlight': (i + 1 === dragOverItemIndex)}"></li>
+                            [ngClass]="{'ui-orderlist-droppoint-highlight': (i + 1 === dragOverItemIndex)}"></li>
                     </ng-template>
                 </ul>
             </div>
@@ -95,6 +96,10 @@ export class OrderList implements AfterViewChecked,AfterContentInit {
     dragOverItemIndex: number;
     
     dragging: boolean;
+    
+    focusedIndex: number;
+    
+    focusedOption: any;
     
     public filterValue: string;
     
@@ -182,6 +187,8 @@ export class OrderList implements AfterViewChecked,AfterContentInit {
             }
         }
         
+        this.focusedOption = item;
+        
         //binding
         this.selectionChange.emit(this._selection);
 
@@ -192,7 +199,7 @@ export class OrderList implements AfterViewChecked,AfterContentInit {
     onFilterKeyup(event) {
         this.filterValue = event.target.value.trim().toLowerCase();
         this.filter();
-        
+    
         this.onFilterEvent.emit({
             originalEvent: event,
             value: this.visibleOptions
@@ -202,6 +209,8 @@ export class OrderList implements AfterViewChecked,AfterContentInit {
     filter() {
         let searchFields: string[] = this.filterBy.split(',');
         this.visibleOptions = this.objectUtils.filter(this.value, searchFields, this.filterValue);
+        this.focusedOption = null;
+        this.focusedIndex = null;
     }
     
     isItemVisible(item: any): boolean {
@@ -310,6 +319,7 @@ export class OrderList implements AfterViewChecked,AfterContentInit {
     }
     
     onDragStart(event: DragEvent, index: number) {
+        (<HTMLLIElement> event.target).blur();
         this.dragging = true;
         this.draggedItemIndex = index;
         if (this.dragdropScope) {
@@ -349,6 +359,77 @@ export class OrderList implements AfterViewChecked,AfterContentInit {
                 this.listViewChild.nativeElement.scrollTop += 15;
             else if (topDiff < 25 && topDiff > 0)
                 this.listViewChild.nativeElement.scrollTop -= 15;
+        }
+    }
+    
+    @HostListener('keydown',['$event'])
+    onKeyDown(event:KeyboardEvent){
+        
+        let opts = this.filterValue ? this.visibleOptions : this.value;
+        let currentOption = <HTMLLIElement>event.target;
+        this.focusedIndex = this.domHandler.indexWithDisplay(currentOption);
+        this.focusedOption = opts[this.focusedIndex]
+        
+        switch(event.which) {
+            //down
+            case 40:
+                this.focusedIndex = this.focusedIndex + 1;
+                if (this.focusedIndex != (opts.length)) {
+                    this.focusedOption = opts[this.focusedIndex];
+                }
+                let nextOption = this.findNextOption(currentOption);
+                if(nextOption) {
+                    nextOption.focus();
+                }
+                
+                event.preventDefault();
+                break;
+            
+            //up
+            case 38:
+                this.focusedIndex = this.focusedIndex - 1;
+                this.focusedOption = opts[this.focusedIndex];
+                let prevOption = this.findPrevOption(currentOption);
+                if (prevOption) {
+                    prevOption.focus();
+                }
+                
+                event.preventDefault();
+                break;
+            
+            //enter
+            case 13:
+                if (this.focusedOption) {
+                    this.onItemClick(event, this.focusedOption, this.focusedIndex);
+                }
+                event.preventDefault();
+                break;
+        }
+    }
+    
+    findPrevOption(row)  {
+        let prevOption = row.previousElementSibling;
+        if (prevOption) {
+            if (this.domHandler.hasClass(prevOption, 'ui-orderlist-item') && prevOption.style.display == 'block')
+                return prevOption;
+            else
+                return this.findPrevOption(prevOption);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    findNextOption(row) {
+        let nextOption = row.nextElementSibling;
+        if (nextOption) {
+            if (this.domHandler.hasClass(nextOption, 'ui-orderlist-item') && nextOption.style.display == 'block')
+                return nextOption;
+            else
+                return this.findNextOption(nextOption);
+        }
+        else {
+            return null;
         }
     }
 }

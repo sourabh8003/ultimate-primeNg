@@ -1,5 +1,5 @@
 # ultimate-primeNG
-UI Components for Angular 2 & 4
+UI Components for Angular 2-7
 
 This version of primeNgcontains some modified version of components and features.
 
@@ -30,8 +30,8 @@ Add PrimeNG and PrimeIcons as a dependencies.
 ```
 "dependencies": {
   //...
-  "primeng": "^6.1.2",
-  "primeicons": "^1.0.0-beta.10"
+  "primeng": "^7.0.0",
+  "primeicons": "^1.0.0"
 },
 ```
 
